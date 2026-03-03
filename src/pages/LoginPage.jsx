@@ -1,20 +1,21 @@
 // src/pages/LoginPage.jsx
 import { useState } from "react";
-import { T } from "../constants/theme";
 import { Card, Btn, Input } from "../components/UI";
 
 export default function LoginPage({ onLogin, error, setError }) {
-  const [login, setLogin]   = useState("");
-  const [pass, setPass]     = useState("");
+  const [login, setLogin] = useState("");
+  const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
-  const now  = new Date();
-  const hour = now.getHours();
+  const hour = new Date().getHours();
   const isOpen = hour >= 8 && hour < 22;
 
   const handleSubmit = () => {
-    if (!login || !pass) { setError("Login va parolni kiriting"); return; }
+    if (!login || !pass) {
+      setError("Login va parolni kiriting");
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       const ok = onLogin(login, pass);
@@ -22,143 +23,145 @@ export default function LoginPage({ onLogin, error, setError }) {
     }, 700);
   };
 
+  const hints = [
+    { icon: "👨‍🏫", text: "nodira / 1234  — Matematika o'qituvchisi" },
+    { icon: "👨‍🏫", text: "bahodur / 1234 — Fizika o'qituvchisi" },
+    { icon: "⚙", text: "admin / root   — Administrator" },
+  ];
+
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: T.bg,
-      backgroundImage: `
-        radial-gradient(ellipse 60% 50% at 15% 50%, ${T.accent}0c 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 85% 30%, ${T.purple}0a 0%, transparent 60%)
-      `,
-    }}>
-      {/* Grid bg */}
-      <div style={{
-        position: "fixed", inset: 0, pointerEvents: "none", opacity: 0.025,
-        backgroundImage: `linear-gradient(${T.text} 1px,transparent 1px),linear-gradient(90deg,${T.text} 1px,transparent 1px)`,
-        backgroundSize: "40px 40px",
-      }} />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-32 top-1/4 h-[520px] w-[520px] rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute -right-40 top-16 h-[460px] w-[460px] rounded-full bg-fuchsia-500/10 blur-3xl" />
+      </div>
 
-      <div style={{ width: "100%", maxWidth: 400, padding: 20, animation: "fadeUp 0.45s ease" }}>
+      {/* Subtle grid */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
+      <div className="w-full max-w-[420px] px-5 animate-[fadeUp_.45s_ease] relative">
         {/* Time status pill */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          padding: "7px 18px", borderRadius: 50, width: "fit-content", margin: "0 auto 28px",
-          background: isOpen ? T.green + "15" : T.red + "15",
-          border: `1px solid ${isOpen ? T.green + "40" : T.red + "40"}`,
-          fontSize: 12, fontWeight: 600,
-          color: isOpen ? T.green : T.red,
-        }}>
-          <div style={{
-            width: 7, height: 7, borderRadius: "50%",
-            background: isOpen ? T.green : T.red,
-            animation: "blink 1.5s infinite",
-          }} />
+        <div
+          className={[
+            "mx-auto mb-7 w-fit rounded-full px-4 py-2 text-xs font-semibold border flex items-center gap-2",
+            isOpen
+              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/25"
+              : "bg-rose-500/10 text-rose-600 border-rose-500/25",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "h-2 w-2 rounded-full",
+              isOpen ? "bg-emerald-500" : "bg-rose-500",
+              "animate-[blink_1.5s_infinite]",
+            ].join(" ")}
+          />
           {isOpen ? "Tizim faol · 22:00 da yopiladi" : "Tizim yopiq · 08:00 da ochiladi"}
         </div>
 
-        <Card hover={false} style={{ padding: "36px 32px" }}>
+        <Card hover={false} className="p-9">
           {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: 30 }}>
-            <div style={{
-              fontFamily: "'Clash Display', sans-serif",
-              fontSize: 34, fontWeight: 700, letterSpacing: -1,
-              background: `linear-gradient(135deg, ${T.accent}, ${T.purple})`,
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              marginBottom: 6,
-            }}>Check UI</div>
-            <div style={{ fontSize: 13, color: T.muted }}>O'qituvchi va admin uchun</div>
+          <div className="text-center mb-7">
+            <div className="text-4xl font-extrabold tracking-tight bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent mb-1">
+              Check UI
+            </div>
+            <div className="text-[13px] text-slate-500">O&apos;qituvchi va admin uchun</div>
           </div>
 
           {/* Fields */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="flex flex-col gap-3.5">
             <Input
               label="LOGIN"
               value={login}
-              onChange={e => setLogin(e.target.value)}
+              onChange={(e) => setLogin(e.target.value)}
               placeholder="loginni kiriting"
             />
 
             {/* Password with eye toggle */}
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.8, color: T.muted, display: "block", marginBottom: 7 }}>
+              <label className="mb-2 block text-[11px] font-semibold tracking-[0.18em] text-slate-500">
                 PAROL
               </label>
-              <div style={{ position: "relative" }}>
+              <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
-                  value={pass} onChange={e => setPass(e.target.value)}
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
                   placeholder="parolni kiriting"
-                  onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                  style={{
-                    width: "100%", padding: "13px 44px 13px 16px",
-                    background: T.surface2, border: `1px solid ${T.border}`,
-                    borderRadius: 12, color: T.text, fontSize: 14,
-                    fontFamily: "'Instrument Sans', sans-serif", outline: "none",
-                  }}
-                  onFocus={e => e.target.style.borderColor = T.accent}
-                  onBlur={e => e.target.style.borderColor  = T.border}
+                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-11 text-sm text-slate-900 outline-none transition focus:border-violet-500"
                 />
-                <button onClick={() => setShowPass(!showPass)} style={{
-                  position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-                  background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 16,
-                }}>{showPass ? "◎" : "◉"}</button>
+                <button
+                  type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-violet-600 transition"
+                  aria-label={showPass ? "Parolni yashirish" : "Parolni ko'rsatish"}
+                >
+                  {showPass ? "◎" : "◉"}
+                </button>
               </div>
             </div>
 
             {/* Error */}
-            {error && (
-              <div style={{
-                background: T.red + "15", border: `1px solid ${T.red}33`,
-                borderRadius: 10, padding: "10px 14px", fontSize: 13, color: T.red,
-                animation: "fadeIn .2s",
-              }}>⚠ {error}</div>
-            )}
+            {error ? (
+              <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-[13px] text-rose-600 animate-[fadeIn_.2s_ease]">
+                ⚠ {error}
+              </div>
+            ) : null}
 
             <Btn
               onClick={handleSubmit}
               disabled={loading}
-              style={{ width: "100%", padding: 13, fontSize: 15, marginTop: 4, animation: "pulse 2s infinite" }}
+              className="w-full py-3 text-[15px] animate-[pulse_2s_infinite]"
             >
               {loading ? "Tekshirilmoqda..." : "Kirish →"}
             </Btn>
           </div>
 
           {/* Demo hints */}
-          <div style={{ marginTop: 22, padding: 14, background: T.surface2, borderRadius: 10 }}>
-            <div style={{ fontSize: 11, color: T.muted, fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>
-              DEMO KIRISH (faqat o'qituvchi/admin)
+          <div className="mt-6 rounded-xl bg-slate-50 p-4 border border-slate-200">
+            <div className="mb-2 text-[11px] font-semibold tracking-[0.12em] text-slate-500">
+              DEMO KIRISH (faqat o&apos;qituvchi/admin)
             </div>
-            {[
-              { icon: "👨‍🏫", text: "nodira / 1234  — Matematika o'qituvchisi" },
-              { icon: "👨‍🏫", text: "bahodur / 1234 — Fizika o'qituvchisi"     },
-              { icon: "⚙",   text: "admin / root   — Administrator"           },
-            ].map((h, i) => (
-              <div key={i} onClick={() => {
-                const [l, p] = h.text.split(" — ")[0].trim().split(" / ");
-                setLogin(l.trim()); setPass(p.trim());
-              }} style={{
-                fontSize: 12, color: T.muted, cursor: "pointer",
-                padding: "3px 0", transition: "color .15s",
-              }}
-                onMouseEnter={e => e.currentTarget.style.color = T.accent}
-                onMouseLeave={e => e.currentTarget.style.color = T.muted}
-              >
-                {h.icon} {h.text}
-              </div>
-            ))}
+
+            <div className="space-y-1">
+              {hints.map((h, i) => (
+                <div
+                  key={i}
+                  onClick={() => {
+                    const [l, p] = h.text.split(" — ")[0].trim().split(" / ");
+                    setLogin(l.trim());
+                    setPass(p.trim());
+                  }}
+                  className="text-xs text-slate-500 cursor-pointer py-1 hover:text-violet-600 transition"
+                >
+                  {h.icon} {h.text}
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
 
         {/* Student block notice */}
-        <div style={{
-          marginTop: 16, textAlign: "center", fontSize: 12, color: T.muted,
-          padding: "10px 16px", borderRadius: 10,
-          background: T.red + "08", border: `1px solid ${T.red}20`,
-        }}>
-          🚫 O'quvchilar bu tizimga kira olmaydi
+        <div className="mt-4 text-center text-xs text-slate-500 rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3">
+          🚫 O&apos;quvchilar bu tizimga kira olmaydi
         </div>
       </div>
+
+      {/* keyframes */}
+      <style>{`
+        @keyframes blink { 0%, 100% { opacity: .35 } 50% { opacity: 1 } }
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes fadeUp { from { opacity:0; transform: translateY(10px) } to { opacity:1; transform: translateY(0) } }
+      `}</style>
     </div>
   );
 }

@@ -1,118 +1,128 @@
-import { useState } from "react";
-import { T } from "../constants/theme";
+import { useMemo, useState } from "react";
 import { STUDENTS } from "../data/mockData";
-import { Card } from "../components/UI";
-import { Avatar } from "../components/UI";
-import { Chip } from "../components/UI";
-import { Btn } from "../components/UI";
+import { Card, Avatar, Btn } from "../components/UI";
 
 export default function StudentsPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
 
-  const filtered = STUDENTS.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return STUDENTS;
+    return STUDENTS.filter((s) => s.name.toLowerCase().includes(q));
+  }, [search]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, animation: "fadeUp 0.4s ease" }}>
-
+    <div className="flex flex-col gap-6 animate-[fadeUp_.35s_ease]">
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: -0.5, fontFamily: "'Clash Display', sans-serif" }}>
-            O'quvchilar
+          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
+            O&apos;quvchilar
           </div>
-          <div style={{ fontSize: 14, color: T.muted, marginTop: 4 }}>
-            9-A sinf · {STUDENTS.length} ta o'quvchi
+          <div className="mt-1 text-sm text-slate-500">
+            9-A sinf · {STUDENTS.length} ta o&apos;quvchi
           </div>
         </div>
-        <Btn>+ O'quvchi qo'shish</Btn>
+        <Btn>+ O&apos;quvchi qo&apos;shish</Btn>
       </div>
 
       {/* Search */}
       <input
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
         placeholder="Ism bo'yicha qidirish..."
-        style={{
-          width: "100%", maxWidth: 360, padding: "11px 16px",
-          background: T.surface, border: `1px solid ${T.border}`,
-          borderRadius: 12, color: T.text, fontSize: 14, outline: "none",
-          fontFamily: "'Instrument Sans', sans-serif",
-        }}
-        onFocus={e => e.target.style.borderColor = T.accent}
-        onBlur={e => e.target.style.borderColor = T.border}
+        className="w-full max-w-[360px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
       />
 
       {/* Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-        {filtered.map((s, i) => (
-          <Card key={s.id} style={{ padding: 22, cursor: "pointer" }}
-            onClick={() => setSelected(selected?.id === s.id ? null : s)}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {filtered.map((s, i) => {
+          const isOpen = selected?.id === s.id;
 
-            {/* Top row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-              <Avatar initials={s.avatar} color={s.color} size={46} />
-              <div style={{
-                fontSize: 22, fontWeight: 700, color: s.color,
-                fontFamily: "'Clash Display', sans-serif",
-              }}>
-                {s.rating}
-              </div>
+          const rankLabel =
+            i < 3 ? ["🥇 1-o'rin", "🥈 2-o'rin", "🥉 3-o'rin"][i] : `#${i + 1} o'rin`;
+
+          const stats = [
+            { label: "Davomat", pct: s.attendance, right: `${s.attendance}%`, color: "bg-emerald-500" },
+            { label: "Vazifalar", pct: (s.tasks / 21) * 100, right: `${s.tasks}/21`, color: "bg-violet-600" },
+            { label: "Reyting", pct: s.rating * 10, right: `${s.rating}/10`, color: "bg-sky-500" },
+          ];
+
+          return (
+            <div
+              key={s.id}
+              className="cursor-pointer"
+              onClick={() => setSelected(isOpen ? null : s)}
+            >
+              <Card className="p-5">
+                {/* Top row */}
+                <div className="flex items-start justify-between mb-4">
+                  {/* Avatar gradient rangini s.color bilan beramiz */}
+                  <Avatar initials={s.avatar} color={s.color} size={46} />
+                  <div
+                    className="text-2xl font-extrabold"
+                    style={{ color: s.color }}
+                  >
+                    {s.rating}
+                  </div>
+                </div>
+
+                <div className="text-[15px] font-bold text-slate-900 mb-1">
+                  {s.name}
+                </div>
+                <div className="text-xs text-slate-500 mb-4">{rankLabel}</div>
+
+                {/* Stats bars */}
+                <div className="space-y-2.5">
+                  {stats.map((r, j) => (
+                    <div key={j}>
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-500">{r.label}</span>
+                        <span className="text-[11px] font-semibold text-slate-700">
+                          {r.right}
+                        </span>
+                      </div>
+                      <div className="h-1 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-[width] duration-700 ease-out ${r.color}`}
+                          style={{ width: `${Math.max(0, Math.min(100, r.pct))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Expanded detail */}
+                {isOpen && (
+                  <div className="mt-4 pt-4 border-t border-slate-200 animate-[fadeIn_.2s_ease] flex flex-col gap-2.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Telefon</span>
+                      <span className="text-slate-900">{s.phone}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Sinf</span>
+                      <span className="text-slate-900">9-A</span>
+                    </div>
+
+                    <div className="mt-1 flex gap-2">
+                      <Btn className="flex-1 px-3 py-2 text-xs">SMS yuborish</Btn>
+                      <Btn variant="ghost" className="flex-1 px-3 py-2 text-xs">
+                        Batafsil
+                      </Btn>
+                    </div>
+                  </div>
+                )}
+              </Card>
             </div>
-
-            <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 3 }}>{s.name}</div>
-            <div style={{ fontSize: 12, color: T.muted, marginBottom: 16 }}>
-              {i < 3 ? ["🥇 1-o'rin", "🥈 2-o'rin", "🥉 3-o'rin"][i] : `#${i + 1} o'rin`}
-            </div>
-
-            {/* Stats bars */}
-            {[
-              { label: "Davomat",   val: s.attendance, max: 100, color: T.green  },
-              { label: "Vazifalar", val: (s.tasks / 21) * 100, max: 100, color: T.accent },
-              { label: "Reyting",   val: s.rating * 10,        max: 100, color: s.color  },
-            ].map((r, j) => (
-              <div key={j} style={{ marginBottom: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                  <span style={{ fontSize: 11, color: T.muted }}>{r.label}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: r.color }}>
-                    {r.label === "Vazifalar" ? `${s.tasks}/21` : r.label === "Reyting" ? `${s.rating}/10` : `${s.attendance}%`}
-                  </span>
-                </div>
-                <div style={{ height: 4, background: T.surface3, borderRadius: 2 }}>
-                  <div style={{ height: "100%", width: `${r.val}%`, background: r.color, borderRadius: 2, transition: "width 0.8s" }} />
-                </div>
-              </div>
-            ))}
-
-            {/* Expanded detail */}
-            {selected?.id === s.id && (
-              <div style={{
-                marginTop: 16, paddingTop: 16,
-                borderTop: `1px solid ${T.border}`,
-                animation: "fadeIn 0.2s",
-                display: "flex", flexDirection: "column", gap: 10,
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <span style={{ color: T.muted }}>Telefon</span>
-                  <span style={{ color: T.text }}>{s.phone}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <span style={{ color: T.muted }}>Sinf</span>
-                  <span style={{ color: T.text }}>9-A</span>
-                </div>
-                <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                  <Btn style={{ flex: 1, padding: "7px", fontSize: 12 }}>SMS yuborish</Btn>
-                  <Btn variant="ghost" style={{ flex: 1, padding: "7px", fontSize: 12 }}>Batafsil</Btn>
-                </div>
-              </div>
-            )}
-          </Card>
-        ))}
+          );
+        })}
       </div>
 
-      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
+      <style>{`
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes fadeUp { from { opacity:0; transform: translateY(10px) } to { opacity:1; transform: translateY(0) } }
+      `}</style>
     </div>
   );
 }
