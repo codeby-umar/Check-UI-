@@ -1,6 +1,3 @@
-// src/data/mockData.js
-
-// Faqat teacher va admin — student yo'q
 export const USERS = [
   { id: 1, name: "Nodira Xolmatova", role: "teacher", login: "nodira", pass: "1234",  subject: "Matematika", avatar: "NX", color: "#4f6ef7" },
   { id: 2, name: "Bahodur Rahimov",  role: "teacher", login: "bahodur", pass: "1234", subject: "Fizika",     avatar: "BR", color: "#a855f7" },

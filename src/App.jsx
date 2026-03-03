@@ -1,16 +1,12 @@
-import Sidebar from "./components/Sidebar";
-import LoginPage    from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import StudentsPage  from "./pages/StudentsPage";
-import TasksPage     from "./pages/TasksPage";
 import { Route , Routes } from "react-router-dom";
+import Home from "./pages/Home";
 
 
 export default function App() {
         return (
           <div>
                <Routes>
-                     <Route path="/" element={<DashboardPage/>} />
+                     <Route path="/" element={<Home/>}/>
                </Routes>
           </div>
         );
