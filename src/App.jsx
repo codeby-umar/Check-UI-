@@ -16,23 +16,21 @@ import Tests from "./pages/Tests";
 import Course from "./pages/Courses";
 import Settings from "./pages/Settings";
 import Chatui from "./pages/Chatui";
+import QuizPage from "./pages/QuizPage";
 
 export default function App() {
   const { user, loading } = useAuth();
 
-  // Firebase user holatini tekshirayotgan vaqtda loading ko'rsatish
   if (loading) return <div className="h-screen flex items-center justify-center text-[#B23DEB] font-bold">Yuklanmoqda...</div>;
 
   return (
     <Routes>
-      {/* 1. Ochiq sahifalar (Login qilmaganlar ham ko'ra oladi) */}
       <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
       
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/explore" element={<Layout><Explore /></Layout>} />
       <Route path="/practice" element={<Layout><Practice /></Layout>} />
 
-      {/* 2. Himoyalangan sahifalar (Faqat login qilganlar uchun) */}
       <Route
         path="/home"
         element={
@@ -46,6 +44,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Layouts><Tests /></Layouts>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="quiz/:id"
+        element={
+          <ProtectedRoute>
+            <Layouts><QuizPage/></Layouts>
           </ProtectedRoute>
         }
       />

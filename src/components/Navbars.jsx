@@ -3,9 +3,12 @@ import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import ButtonBase from "@mui/material/ButtonBase";
 import gr from "../assets/gr.svg";
+import { useAuth } from "../context/AuthContext";
 
 function Navbars() {
+  const { user } = useAuth();
   const [avatarSrc, setAvatarSrc] = React.useState(undefined);
+  const userName = user?.displayName || user?.email?.split("@")[0] || "Mehmon";
 
   const handleAvatarChange = (event) => {
     const file = event.target.files?.[0];
@@ -19,8 +22,9 @@ function Navbars() {
   return (
     <div className="flex  items-center justify-between p-8 w-full px-12">
       <div className="min-w-0">
-        <h1 className="text-[42px] font-semibold text-slate-900 ">
-          Welcome <span className="text-[#B23DEB]">John!</span>
+        <h1 className="text-[42px] font-semibold text-slate-900">
+          Welcome{" "}
+          <span className="text-[#B23DEB] capitalize">{userName}!</span>
         </h1>
         <p className="m-2 text-lg text-slate-500">
           Here is your Profile Dashboard

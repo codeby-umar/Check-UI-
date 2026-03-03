@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase'
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { Trophy, Medal, Crown, ArrowUp } from 'lucide-react';
+import { useAuth } from "../context/AuthContext"; // AuthContext ni chaqiramiz
+import { Trophy, Medal, Crown, ArrowUp, Zap } from 'lucide-react';
 
 const Leaderboard = () => {
+  const { user: currentUser } = useAuth(); // Hozirgi login qilgan odam
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Eng ko'p ball to'plagan 10 ta foydalanuvchi
     const q = query(
       collection(db, "users"), 
       orderBy("score", "desc"), 
@@ -28,87 +31,92 @@ const Leaderboard = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen text-[#B23DEB] font-bold">
-        Yuklanmoqda...
+      <div className="flex justify-center items-center text-[#B23DEB] font-black text-xl">
+         Reyting Yuklanmoqda ...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-3xl mx-auto">
-        
-        {/* Header Section */}
-        <div className="bg-[#B23DEB] rounded-3xl p-8 text-white shadow-2xl mb-8 relative overflow-hidden">
-          <div className="relative z-10">
-            <h1 className="text-3xl font-black flex items-center gap-2">
-              <Trophy className="text-yellow-300" size={32} />
-              Leaderboard
-            </h1>
-            <p className="opacity-80 mt-2">Eng yaxshi natija ko'rsatgan foydalanuvchilar</p>
+    <div>
+      <div className="bg-gradient-to-br from-[#B23DEB] to-[#8a2eb8] rounded-[40px] p-8 text-white shadow-2xl mb-12 relative overflow-hidden">
+        <div className="relative z-10 text-center">
+          <Trophy className="text-yellow-300 mx-auto mb-4" size={50} />
+          <h1 className="text-4xl font-black tracking-tight">Top Foydalanuvchilar</h1>
+          <p className="opacity-90 mt-2 font-medium">Bilimlar jangi: Kim eng ko'p ball to'pladi?</p>
+        </div>
+        <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white opacity-10 rounded-full"></div>
+      </div>
+
+      <div className="flex items-end justify-center gap-2 md:gap-6 mb-12 px-2">
+        {leaders[1] && (
+          <div className="flex flex-col items-center flex-1 bg-white p-4 rounded-3xl shadow-sm border-b-4 border-gray-300 h-44">
+            <img src={leaders[1].photoURL || `https://ui-avatars.com/api/?name=${leaders[1].name}`} className="w-14 h-14 rounded-full border-4 border-gray-100 object-cover mb-2" alt="2nd" />
+            <span className="text-sm font-bold text-gray-700 truncate w-full text-center">{leaders[1].name}</span>
+            <span className="text-gray-400 font-black">{leaders[1].score}</span>
+            <div className="mt-auto bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold">2-O'RIN</div>
           </div>
-          {/* Bezak uchun abstrakt doira */}
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
-        </div>
+        )}
 
-        {/* Top 3 Talents (Card view) */}
-        <div className="grid grid-cols-3 gap-4 mb-8 items-end">
-          {leaders.slice(0, 3).map((user, index) => (
-            <div key={user.id} className={`flex flex-col items-center p-4 rounded-2xl shadow-sm ${
-              index === 0 ? 'bg-white border-2 border-[#B23DEB] h-48' : 'bg-white h-40'
-            }`}>
-              <div className="relative">
-                <img 
-                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.name}`} 
-                  alt={user.name}
-                  className={`rounded-full object-cover ${index === 0 ? 'w-20 h-20' : 'w-14 h-14'}`}
-                />
-                {index === 0 && <Crown className="absolute -top-6 left-1/2 -translate-x-1/2 text-yellow-500" size={30} />}
-              </div>
-              <p className="font-bold text-gray-800 mt-2 text-sm truncate w-full text-center">{user.name}</p>
-              <p className={`font-black ${index === 0 ? 'text-[#B23DEB] text-xl' : 'text-gray-500'}`}>
-                {user.score}
-              </p>
-            </div>
-          ))}
-        </div>
+        {leaders[0] && (
+          <div className="flex flex-col items-center flex-1 bg-white p-6 rounded-[35px] shadow-xl border-b-4 border-yellow-400 h-56 relative transform -translate-y-4 scale-110">
+            <Crown className="absolute -top-8 text-yellow-500 fill-yellow-500" size={36} />
+            <img src={leaders[0].photoURL || `https://ui-avatars.com/api/?name=${leaders[0].name}`} className="w-20 h-20 rounded-full border-4 border-yellow-100 object-cover mb-2 shadow-lg" alt="1st" />
+            <span className="text-lg font-black text-gray-800 truncate w-full text-center">{leaders[0].name}</span>
+            <span className="text-[#B23DEB] font-black text-2xl">{leaders[0].score}</span>
+            <div className="mt-auto bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-[12px] font-black">G'OLIB</div>
+          </div>
+        )}
+        {leaders[2] && (
+          <div className="flex flex-col items-center flex-1 bg-white p-4 rounded-3xl shadow-sm border-b-4 border-orange-300 h-40">
+            <img src={leaders[2].photoURL || `https://ui-avatars.com/api/?name=${leaders[2].name}`} className="w-12 h-12 rounded-full border-4 border-gray-100 object-cover mb-2" alt="3rd" />
+            <span className="text-sm font-bold text-gray-700 truncate w-full text-center">{leaders[2].name}</span>
+            <span className="text-gray-400 font-black">{leaders[2].score}</span>
+            <div className="mt-auto bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold">3-O'RIN</div>
+          </div>
+        )}
+      </div>
+      <div className="bg-white rounded-[40px] shadow-sm overflow-hidden border border-gray-50">
+        {leaders.map((user, index) => {
+          const isMe = currentUser?.uid === user.id;
 
-        {/* List Section */}
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
-          {leaders.map((user, index) => (
+          return (
             <div 
               key={user.id} 
-              className="flex items-center justify-between p-5 hover:bg-gray-50 transition-colors border-b last:border-0"
+              className={`flex items-center justify-between p-5 transition-all border-b last:border-0 ${
+                isMe ? 'bg-purple-50 border-l-8 border-l-[#B23DEB]' : 'hover:bg-gray-50'
+              }`}
             >
               <div className="flex items-center gap-4">
-                <span className={`w-8 font-bold text-lg ${index < 3 ? 'text-[#B23DEB]' : 'text-gray-400'}`}>
-                  #{index + 1}
+                <span className={`w-8 font-black text-lg ${index < 3 ? 'text-[#B23DEB]' : 'text-gray-300'}`}>
+                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
                 </span>
-                <img 
-                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.name}`} 
-                  className="w-10 h-10 rounded-full"
-                  alt="avatar"
-                />
+                <div className="relative">
+                   <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.name}`} className="w-12 h-12 rounded-2xl object-cover" alt="avatar" />
+                   {isMe && <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>}
+                </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800">{user.name}</h4>
-                  <p className="text-xs text-gray-400">Yutuqlar: {user.achievements || 0}</p>
+                  <h4 className={`font-bold ${isMe ? 'text-[#B23DEB]' : 'text-gray-800'}`}>
+                    {user.name} {isMe && "(Siz)"}
+                  </h4>
+                  <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest flex items-center gap-1">
+                    <Zap size={10} className="fill-yellow-400 text-yellow-400" /> Aktivlik: {user.testsCompleted || 0} ta test
+                  </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="font-bold text-gray-900">{user.score.toLocaleString()}</p>
-                  <p className="text-[10px] text-emerald-500 font-medium flex items-center justify-end">
-                    <ArrowUp size={10} /> 12%
+                  <p className="font-black text-xl text-gray-900">{user.score}</p>
+                  <p className="text-[10px] text-emerald-500 font-bold flex items-center justify-end">
+                    TOP {((index + 1) / leaders.length * 100).toFixed(0)}%
                   </p>
                 </div>
-                {index === 0 && <Medal className="text-yellow-500" size={20} />}
-                {index === 1 && <Medal className="text-gray-400" size={20} />}
-                {index === 2 && <Medal className="text-orange-400" size={20} />}
+                {index === 0 && <Medal className="text-yellow-500" size={24} />}
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );
