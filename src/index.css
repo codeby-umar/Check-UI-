@@ -22,3 +22,13 @@ body::before{
   width: 100% 30px 1445px;
   margin: 0 auto;
 }
+
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  
+  scrollbar-width: none;    
+}

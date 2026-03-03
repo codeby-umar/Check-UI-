@@ -2,7 +2,9 @@ import React from 'react'
 
 function Dashboard() {
   return (
-    <div>Dashboard</div>
+    <div className='no-scrollbar'>
+         
+    </div>
   )
 }
 
