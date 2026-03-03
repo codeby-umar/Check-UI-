@@ -1,12 +1,10 @@
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Hearder from "../components/Hearder";
 
 function Layout({ children }) {
   return (
     <div>
-      <Navbar />
+       <Hearder/>
       {children}
-      <Footer />
     </div>
   );
 }
