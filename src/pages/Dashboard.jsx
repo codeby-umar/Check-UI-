@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
 import emailjs from '@emailjs/browser'; 
+
 import {
   collection,
   query,
@@ -33,10 +34,9 @@ const Dashboard = () => {
     growth: 0
   });
 
-  // --- EMAILJS MANTIQI ---
   const sendSMSResult = (res) => {
     const templateParams = {
-      to_phone: "+998507121208", // Sening kodingdagi raqam
+      to_phone: "+998507121208", 
       subject: res.subject,      
       score: res.score,          
       test_title: res.testTitle, 
@@ -44,10 +44,10 @@ const Dashboard = () => {
     };
 
     emailjs.send(
-      'service_4bvzqy2',    // Service ID
-      'template_pa6vbdm',   // Template ID
+      'service_4bvzqy2',    
+      'template_pa6vbdm',  
       templateParams, 
-      's3ey1weWzO5vZCz9N'   // Public Key
+      's3ey1weWzO5vZCz9N'   
     )
     .then(() => {
       alert("Natija telefoningizga yuborildi! ✅");
@@ -103,8 +103,6 @@ const Dashboard = () => {
       
       <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-10">
-          
-          {/* 1. Header Section */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-[#B23DEB] mb-2">
@@ -116,30 +114,26 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="flex gap-4">
-               <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-4">
+               <div className="bg-white/5 border border-white/10 px-6 py-3  flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">System Status</p>
                     <p className="text-emerald-400 text-xs font-black uppercase">Online</p>
                   </div>
-                  <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center border border-emerald-500/20">
+                  <div className="w-4 h-4 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
                   </div>
                </div>
             </div>
           </div>
-
-          {/* 2. Key Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard title="Samaradorlik" value={`${stats.average}%`} trend={stats.growth} sub="O'rtacha ko'rsatkich" icon={<FiTrendingUp/>} color="#B23DEB" />
             <MetricCard title="Testlar" value={stats.total} trend="+1" sub="Jami urinishlar" icon={<FiActivity/>} color="#3B82F6" />
             <MetricCard title="O'sish" value={`${stats.growth}%`} trend={stats.growth} sub="Oxirgi natijadan" icon={<FiArrowUpRight/>} color="#10B981" />
             <MetricCard title="Eng yaxshi" value={stats.bestSubject} trend="0" sub="Asosiy yo'nalish" icon={<FiZap/>} color="#F59E0B" />
           </div>
-
-          {/* 3. Charts & Calendar Row */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Area Chart */}
-            <div className="lg:col-span-8 bg-[#111] border border-white/5 p-8 rounded-[3rem] relative overflow-hidden group">
+
+            <div className="lg:col-span-8 bg-[#111] border border-white/5 p-8 relative overflow-hidden group">
               <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-8 text-gray-500 flex items-center gap-2">
                 <FiActivity className="text-[#B23DEB]"/> Progress Dinamikasi
               </h3>
@@ -162,8 +156,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Activity Calendar */}
-            <div className="lg:col-span-4 bg-[#111] border border-white/5 p-8 rounded-[3rem] flex flex-col items-center">
+            <div className="lg:col-span-4 bg-[#111] border border-white/5 p-8  flex flex-col items-center">
               <h3 className="text-xs font-black uppercase tracking-[0.2em] self-start text-gray-500 mb-6">Activity Log</h3>
               <style>{`
                 .react-calendar { background: transparent !important; border: none !important; width: 100% !important; color: white; font-family: inherit; }
@@ -176,11 +169,10 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 4. Recent Attempts Grid */}
           <h2 className="text-xs font-black uppercase tracking-[0.4em] text-gray-500">So'nggi urinishlar</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
             {results.map((res) => (
-              <div key={res.id} className="group bg-[#111] border border-white/5 p-8 rounded-[2.5rem] hover:border-[#B23DEB]/30 transition-all duration-500 relative overflow-hidden">
+              <div key={res.id} className="group bg-[#111] border border-white/5 p-8  hover:border-[#B23DEB]/30 transition-all duration-500 relative overflow-hidden">
                 
                 {/* EmailJS/SMS Button */}
                 <button 
@@ -235,9 +227,9 @@ const Dashboard = () => {
   );
 };
 
-// MetricCard Component
+
 const MetricCard = ({ title, value, sub, icon, color, trend }) => (
-  <div className="bg-[#111] border border-white/5 p-6 rounded-[2.5rem] hover:border-[#B23DEB]/30 transition-all duration-500 group relative overflow-hidden">
+  <div className="bg-[#111] border border-white/5 p-6  hover:border-[#B23DEB]/30 transition-all duration-500 group relative overflow-hidden">
     <div className="flex justify-between items-start mb-6">
       <div 
         className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-lg border transition-transform group-hover:scale-110"

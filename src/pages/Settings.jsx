@@ -11,10 +11,10 @@ const Settings = () => {
   const [notifications, setNotifications] = useState(true);
   const [biometric, setBiometric] = useState(false);
   const [adminData, setAdminData] = useState({
-    name: "Yuklanmoqda...",
+    name: "Admin",
     email: "",
     role: "Bosh Admin",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+    image: "https://as2.ftcdn.net/jpg/01/12/09/17/1000_F_112091769_vWEmDiwVIpO4H1plGuhYgnmduTuiGUh2.jpg",
   });
 
   useEffect(() => {
@@ -43,15 +43,15 @@ const Settings = () => {
 
   return (
     <div className="h-screen overflow-y-auto bg-[#050505] text-gray-300 p-4 md:p-10 custom-scrollbar selection:bg-[#B23DEB]/30">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10">
+      <div className=" mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10">
         
         {/* Left Side */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[2.5rem] text-center backdrop-blur-3xl relative group transition-all hover:border-[#B23DEB]/20">
+          <div className="bg-white/3 border border-white/5 p-8  text-center backdrop-blur-3xl relative group transition-all hover:border-[#B23DEB]/20">
             <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             
             <div className="relative w-36 h-36 mx-auto mb-6">
-              <div className="w-full h-full rounded-[2.5rem] p-1 bg-gradient-to-tr from-[#B23DEB] to-fuchsia-500 shadow-2xl group-hover:rotate-3 transition-transform duration-500">
+              <div className="w-full h-full rounded-[2.5rem] p-1 bg-gradient-to-tr from-[#B23DEB] to-fuchsia-500  group-hover:rotate-3 transition-transform duration-500">
                 <img src={adminData.image} className="w-full h-full rounded-[2.3rem] object-cover bg-[#0a0a0a]" alt="avatar" />
               </div>
               <label className="absolute -bottom-2 -right-2 p-3 bg-[#B23DEB] text-white rounded-xl cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-lg shadow-[#B23DEB]/40">
@@ -71,7 +71,7 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="bg-white/[0.03] border border-white/5 p-6 rounded-[2rem] space-y-6">
+          <div className="bg-white/3 border border-white/5 p-6 rounded- space-y-6">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
               <Activity size={14} className="text-[#B23DEB]" /> Tizim Holati
             </h3>
@@ -82,7 +82,7 @@ const Settings = () => {
 
         {/* Right Side */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white/[0.03] border border-white/5 p-8 md:p-10 rounded-[3rem] backdrop-blur-3xl shadow-2xl">
+          <div className="bg-white/3 border border-white/5 p-8 md:p-10  backdrop-blur-3xl shadow-2xl">
             <div className="flex justify-between items-center mb-10">
               <div>
                 <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">
@@ -157,7 +157,7 @@ const AdminInput = ({ label, value, type = "text", icon }) => (
     <label className="text-[10px] font-bold text-gray-500 uppercase ml-4 tracking-widest group-focus-within:text-[#B23DEB] transition-colors">{label}</label>
     <div className="relative">
       <div className="absolute left-4 top-4 text-gray-500 group-focus-within:text-[#B23DEB] transition-colors">{icon}</div>
-      <input type={type} defaultValue={value} className="w-full bg-white/[0.05] border border-white/5 pl-12 pr-4 py-4 rounded-2xl text-sm font-bold outline-none focus:border-[#B23DEB]/40 focus:bg-white/[0.08] transition-all" />
+      <input type={type} defaultValue={value} className="w-full bg-white/5 border border-white/5 pl-12 pr-4 py-4 rounded-2xl text-sm font-bold outline-none focus:border-[#B23DEB]/40 focus:bg-white/[0.08] transition-all" />
     </div>
   </div>
 );
@@ -178,7 +178,7 @@ const ToggleCard = ({ icon, title, active, onClick, color }) => (
   <div 
     onClick={onClick}
     className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none ${
-      active ? 'bg-[#B23DEB]/5 border-[#B23DEB]/30' : 'bg-white/[0.02] border-white/5'
+      active ? 'bg-[#B23DEB]/5 border-[#B23DEB]/30' : 'bg-white/2 border-white/5'
     }`}
   >
     <div className="flex items-center gap-4">

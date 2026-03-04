@@ -26,7 +26,7 @@ function Navbars() {
   };
 
   return (
-    <div className="w-full flex items-center border-b justify-between p-8 bg-[#0a0a0a]">
+    <div className="w-full flex items-center border-b border-white/5 mb-4 justify-between p-8 bg-[#0a0a0a]">
       
       {/* Chap tomon: Matnlar */}
       <div className="flex flex-col">

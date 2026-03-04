@@ -76,7 +76,7 @@ function NavItem({ to, icon, label }) {
           `flex items-center gap-4 px-4 py-3 rounded-2xl font-bold tracking-tight transition-all duration-300 group ${
             isActive 
               ? "bg-[#B23DEB]/10 text-[#B23DEB] shadow-[inset_0_0_20px_rgba(178,61,235,0.05)]" 
-              : "text-gray-500 hover:text-white hover:bg-white/5"
+              : "text-gray-300 hover:text-white hover:bg-white/5"
           }`
         }
       >

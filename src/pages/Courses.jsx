@@ -60,7 +60,7 @@ const Courses = () => {
               </p>
             </div>
 
-            <div className="relative w-full lg:w-[500px]">
+            <div className="relative w-full lg:w-125">
               <div className="absolute -inset-1 bg-gradient-to-r from-[#B23DEB] to-blue-600 rounded-[2.5rem] blur opacity-20"></div>
               <div className="relative flex items-center bg-[#111] border border-white/5 rounded-[2.5rem] px-8 py-2">
                 <Search className="text-gray-600" size={22} />
@@ -82,7 +82,7 @@ const Courses = () => {
                 onClick={() => setFilter(cat)}
                 className={`px-10 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all border-2 ${
                   filter === cat 
-                  ? "bg-[#B23DEB] text-white border-[#B23DEB] shadow-[0_15px_40px_rgba(178,61,235,0.3)] -translate-y-1" 
+                  ? "bg-[#B23DEB] text-white border-[#B23DEB]" 
                   : "bg-transparent text-gray-600 border-white/5 hover:border-[#B23DEB]/30 hover:text-white"
                 }`}
               >

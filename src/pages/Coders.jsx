@@ -17,8 +17,7 @@ const Coders = () => {
         let logs = [];
         const oldLog = console.log;
         console.log = (msg) => logs.push(msg);
-        
-        // Xavfsizroq eval uchun scope yaratish
+     
         new Function(code)(); 
         
         console.log = oldLog;
@@ -49,7 +48,6 @@ const Coders = () => {
   return (
     <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-10 custom-scrollbar flex flex-col">
       
-      {/* Header & Title */}
       <div className="max-w-6xl mx-auto w-full mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-4xl font-black text-white tracking-tighter flex items-center gap-3">
@@ -89,12 +87,11 @@ const Coders = () => {
         </div>
       </div>
 
-      {/* Editor & Terminal Container */}
-      <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[600px] mb-10">
+      <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-150 mb-10">
         
         {/* Editor Section */}
-        <div className="lg:col-span-2 bg-[#1e1e1e] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl flex flex-col group">
-          <div className="bg-white/[0.03] px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <div className="lg:col-span-2 bg-[#1e1e1e]  border border-white/5 overflow-hidden shadow-2xl flex flex-col group">
+          <div className="bg-white/3 px-6 py-4 border-b border-white/5 flex items-center justify-between">
             <div className="flex space-x-2">
               <div className="w-3 h-3 bg-[#ff5f56] rounded-full shadow-[0_0_10px_#ff5f56]"></div>
               <div className="w-3 h-3 bg-[#ffbd2e] rounded-full shadow-[0_0_10px_#ffbd2e]"></div>
@@ -124,8 +121,7 @@ const Coders = () => {
           </div>
         </div>
 
-        {/* Terminal Section */}
-        <div className="bg-[#0f0f0f] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl flex flex-col relative">
+        <div className="bg-[#0f0f0f]  border border-white/5 overflow-hidden shadow-2xl flex flex-col relative">
           <div className="bg-white/[0.03] px-6 py-4 border-b border-white/5 flex items-center gap-3">
             <Terminal size={16} className="text-[#B23DEB]" />
             <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase">Output Terminal</span>

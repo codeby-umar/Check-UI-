@@ -44,11 +44,10 @@ const Tests = () => {
   };
 
   return (
-    <div className="bg-[#0a0a0a] h-full py-10  ">
-      {/* Header Section */}
+    <div className="bg-[#0a0a0a] h-screen  ">
       <div className="flex justify-between px-7 items-end mb-12 max-w-7xl mx-auto border-b border-white/5 pb-8">
         <div>
-          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+          <h1 className="text-4xl md:text-4xl font-bold text-white tracking-tighter">
             Mavjud <span className="text-[#B23DEB]">Testlar</span>
           </h1>
           <p className="text-gray-500 mt-2 font-medium">Bilimingizni sinash uchun eng so'nggi topshiriqlar</p>
@@ -57,7 +56,7 @@ const Tests = () => {
         {isAdmin && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="group flex items-center gap-2 bg-[#B23DEB] text-white px-8 py-4 rounded-2xl font-black shadow-[0_10px_30px_rgba(178,61,235,0.3)] hover:scale-105 transition-all active:scale-95"
+            className="group flex items-center gap-2 bg-[#B23DEB] text-white px-8 py-4  rounded-sm font-semibold  hover:scale-105 transition-all active:scale-95"
           >
             <FiPlus size={20} />
             YANGI TEST
@@ -65,15 +64,13 @@ const Tests = () => {
         )}
       </div>
 
-      {/* Grid Section */}
-      <div className="grid grid-cols-1 px-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto pb-20">
+      <div className="gap-8  flex items-center justify-center flex-wrap  pb-20">
         {tests.map((test) => (
           <div
             key={test.id}
-            className="group relative bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-6 transition-all duration-500 hover:border-[#B23DEB]/30 hover:bg-white/[0.04] overflow-hidden"
+            className="group relative h-100 w-80 bg-white/2 border border-white/5  p-6 transition-all duration-500 hover:border-[#B23DEB]/30 hover:bg-white/4 overflow-hidden"
           >
-            {/* Test Image Container */}
-            <div className="relative w-full h-48 mb-6 rounded-[2rem] overflow-hidden bg-[#050505]">
+            <div className="relative w-full h-48 mb-6 rounded-xl overflow-hidden bg-[#050505]">
               <img
                 src={test.imageUrl}
                 alt={test.title}
@@ -105,21 +102,21 @@ const Tests = () => {
             {/* Hover Overlay - Start Test */}
             <div
               onClick={() => navigate(`/quiz/${test.id}`)}
-              className="absolute inset-0 bg-[#B23DEB]/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center z-10 cursor-pointer"
+              className="absolute inset-0 bg-fuchsia-500 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center z-10 cursor-pointer"
             >
-              <div className="p-4 bg-white/20 rounded-full mb-4 animate-bounce">
+              <div className="p-4 bg-white/20 rounded-full mb-4">
                 <IoPlayCircle size={50} className="text-white" />
               </div>
-              <span className="text-white font-black text-xl tracking-[0.2em]">BOSHLASH</span>
+              <span className="text-white font-black text-xl tracking-[0.2em]">Start</span>
             </div>
 
             {/* Admin Delete Action */}
             {isAdmin && (
               <button
                 onClick={(e) => handleDelete(e, test.id)}
-                className="absolute top-4 right-4 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white p-2.5 rounded-xl z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+                className="absolute top-4 right-4  text-white hover:text-white p-2.5  z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
               >
-                <IoTrashOutline size={18} />
+                <IoTrashOutline size={"25px"} />
               </button>
             )}
           </div>

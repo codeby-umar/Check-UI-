@@ -27,7 +27,6 @@ const Tekshirish = () => {
     if (!selectedImage) return;
     setIsScanning(true);
     
-    // Simulyatsiya: 3 soniyadan keyin natija chiqadi
     setTimeout(() => {
       setIsScanning(false);
       setResult({
@@ -42,9 +41,8 @@ const Tekshirish = () => {
     <div className="h-screen w-full bg-[#0a0a0a] flex flex-col overflow-hidden text-white font-sans">
       
       <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar">
-        <div className="max-w-6xl mx-auto pb-20">
+        <div className="mx-auto pb-20">
           
-          {/* 1. Header Section */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-white/5 pb-10">
             <div>
               <div className="flex items-center gap-2 text-[#B23DEB] mb-4">
@@ -66,10 +64,9 @@ const Tekshirish = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             
-            {/* 2. Upload/Preview Area */}
             <div className="space-y-6">
               <div 
-                className={`relative aspect-[4/5] rounded-[3.5rem] border-2 border-dashed transition-all duration-700 overflow-hidden flex flex-col items-center justify-center bg-[#111] ${
+                className={`relative aspect-4/5 rounded-sm border-2 border-dashed transition-all duration-700 overflow-hidden flex flex-col items-center justify-center bg-[#111] ${
                   selectedImage ? 'border-[#B23DEB]/40' : 'border-white/5 hover:border-white/10'
                 }`}
               >
@@ -77,7 +74,6 @@ const Tekshirish = () => {
                   <>
                     <img src={selectedImage} alt="Preview" className="w-full h-full object-cover opacity-60" />
                     
-                    {/* Scanning Animation Layer */}
                     {isScanning && (
                       <div className="absolute inset-0 z-10">
                         <div className="w-full h-1 bg-[#B23DEB] shadow-[0_0_20px_#B23DEB] absolute top-0 animate-scan"></div>
@@ -89,16 +85,15 @@ const Tekshirish = () => {
                   </>
                 ) : (
                   <div className="text-center p-10">
-                    <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-white/5">
+                    <div className="w-24 h-24 bg-white/5 rounded-4xl flex items-center justify-center mx-auto mb-6 border border-white/5">
                       <IoCloudUploadOutline size={40} className="text-gray-700" />
                     </div>
                     <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em] mb-2">Vazifani yuklang</p>
-                    <p className="text-gray-700 text-[9px] font-bold uppercase tracking-widest max-w-[200px]">Rasmga oling yoki galereyadan tanlang (PNG, JPG)</p>
+                    <p className="text-gray-700 text-[9px] font-bold uppercase tracking-widest max-w-50">Rasmga oling yoki galereyadan tanlang (PNG, JPG)</p>
                   </div>
                 )}
               </div>
 
-              {/* Upload Buttons */}
               <div className="flex gap-4">
                 <input 
                   type="file" 
@@ -109,22 +104,21 @@ const Tekshirish = () => {
                 />
                 <button 
                   onClick={() => fileInputRef.current.click()}
-                  className="flex-1 py-5 bg-[#111] border border-white/10 rounded-[2rem] font-black text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all"
+                  className="flex-1 py-5 rounded-sm bg-[#111] border border-white/10  font-black text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all"
                 >
                   <IoImageOutline size={20} /> GALEREYA
                 </button>
                 <button 
-                  onClick={() => fileInputRef.current.click()} // Mobile-da kamerani ochadi
-                  className="flex-1 py-5 bg-[#111] border border-white/10 rounded-[2rem] font-black text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all"
+                  onClick={() => fileInputRef.current.click()} 
+                  className="flex-1 py-5 bg-[#111] rounded-sm border border-white/10 font-black text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all"
                 >
                   <IoCameraOutline size={20} /> KAMERA
                 </button>
               </div>
             </div>
 
-            {/* 3. Results/Analysis Area */}
             <div className="flex flex-col">
-              <div className="flex-1 bg-[#111] border border-white/5 rounded-[3.5rem] p-10 flex flex-col relative overflow-hidden">
+              <div className="flex-1 bg-[#111] border border-white/5 rounded-dm p-10 flex flex-col relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-10 opacity-5">
                    <IoScanOutline size={150} />
                 </div>
@@ -136,9 +130,9 @@ const Tekshirish = () => {
                     <button 
                       onClick={startAnalysis}
                       disabled={!selectedImage}
-                      className={`mt-8 px-12 py-4 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all ${
+                      className={`mt-8 px-12 py-4  font-black text-[10px]  uppercase transition-all ${
                         selectedImage 
-                        ? 'bg-[#B23DEB] text-white shadow-[0_10px_30px_rgba(178,61,235,0.3)] hover:scale-105' 
+                        ? 'bg-[#B23DEB] text-white  hover:scale-105' 
                         : 'bg-white/5 text-gray-700 cursor-not-allowed'
                       }`}
                     >
@@ -161,7 +155,7 @@ const Tekshirish = () => {
                 {result && (
                   <div className="space-y-8 animate-fadeIn">
                     <div className="flex items-center justify-between">
-                      <div className="w-20 h-20 bg-[#B23DEB]/10 rounded-[1.5rem] flex items-center justify-center border border-[#B23DEB]/20">
+                      <div className="w-20 h-20 bg-[#B23DEB]/10 rounded-3xl flex items-center justify-center border border-[#B23DEB]/20">
                         <IoCheckmarkDoneCircle size={40} className="text-[#B23DEB]" />
                       </div>
                       <div className="text-right">
@@ -170,11 +164,11 @@ const Tekshirish = () => {
                       </div>
                     </div>
 
-                    <div className="h-[1px] w-full bg-white/5"></div>
+                    <div className="h-0.5 w-full bg-white/5"></div>
 
                     <div>
                       <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">AI Feedback</p>
-                      <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] italic text-gray-300 leading-relaxed text-sm">
+                      <div className="bg-white/2 border border-white/5 p-6 italic text-gray-300 leading-relaxed text-sm">
                         "{result.feedback}"
                       </div>
                     </div>
@@ -194,7 +188,7 @@ const Tekshirish = () => {
               </div>
               
               <button 
-                className="mt-6 w-full py-5 bg-white text-black rounded-[2rem] font-black text-[10px] tracking-[0.3em] uppercase hover:bg-[#B23DEB] hover:text-white transition-all shadow-xl"
+                className="mt-6 w-full py-5 bg-white text-black text-sm  font-black text-sm  uppercase hover:bg-[#B23DEB] hover:text-white transition-all shadow-xl"
                 onClick={() => {setSelectedImage(null); setResult(null);}}
               >
                 YANGI SKANERLASH
