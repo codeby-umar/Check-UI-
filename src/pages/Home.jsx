@@ -88,9 +88,9 @@ function Home() {
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">Platformamiz sizga eng qisqa vaqt ichida natijaga erishishingiz uchun barcha asboblarni taqdim etadi.</p>
         </div>
 
-        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="container mx-auto px-3 md:px-6  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((f, i) => (
-            <div key={i} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#B23DEB]/50 transition-all duration-500 group">
+            <div key={i} className="p-8 rounded-lg bg-white/5 border border-white/10 hover:border-[#B23DEB]/50 transition-all duration-500 group">
               <div className="w-14 h-14 rounded-2xl bg-[#B23DEB]/10 flex items-center justify-center text-[#B23DEB] mb-6 group-hover:scale-110 transition-transform">
                 {f.icon}
               </div>

@@ -11,13 +11,10 @@ const Practice = () => {
 
   return (
     <div className="min-h-screen py-20 px-6 relative overflow-hidden bg-[#0a0a0a] text-white">
-      {/* Orqa fon bezaklari (Ambient Background) */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#B23DEB]/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[0%] right-[-5%] w-[400px] h-[400px] bg-[#B23DEB]/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-125 h-125 bg-[#B23DEB]/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[0%] right-[-5%] w-100 h-100 bg-[#B23DEB]/5 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="container mx-auto relative z-10">
-        
-        {/* Sarlavha qismi */}
         <div className="text-center mb-24">
           <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium tracking-wider text-[#B23DEB] uppercase bg-[#B23DEB]/10 rounded-full border border-[#B23DEB]/20">
             O'z ustingda ishla
@@ -33,15 +30,14 @@ const Practice = () => {
           </p>
         </div>
 
-        {/* Kartochkalar gridi */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {tracks.map((track, index) => (
             <div 
               key={index} 
-              className="group relative p-[1px] rounded-[2.5rem] bg-gradient-to-b from-white/10 to-transparent hover:from-[#B23DEB]/50 transition-all duration-500 shadow-2xl"
+              className="group relative p-0.5 rounded-sm  bg-gradient-to-b from-white/10 to-transparent hover:from-[#B23DEB]/50 transition-all duration-500 shadow-2xl"
             >
               {/* Kartochka ichki qismi */}
-              <div className="relative h-full bg-[#111] rounded-[2.5rem] p-8 overflow-hidden flex flex-col">
+              <div className="relative h-full bg-[#111] rounded-lg p-8 overflow-hidden flex flex-col">
                 
                 {/* Hover gradient effekti */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#B23DEB]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

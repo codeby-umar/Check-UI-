@@ -15,7 +15,6 @@ const Explore = () => {
 
       <div className="container mx-auto relative z-10">
         
-        {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 mb-20">
           <div className="max-w-2xl text-center lg:text-left">
             <h1 className="text-6xl flex gap-4 md:text-5xl font-bold mb-6 tracking-tighter leading-none">
@@ -29,7 +28,6 @@ const Explore = () => {
             </p>
           </div>
 
-          {/* Search & Filter bar (Dizaynni boyitish uchun) */}
           <div className="flex items-center gap-4 bg-white/5 border border-white/10 p-2 rounded-2xl backdrop-blur-md">
             <div className="flex items-center gap-3 px-4">
               <FiSearch className="text-gray-500" />
@@ -46,12 +44,12 @@ const Explore = () => {
         </div>
       
 
-        {/* Content Grid */}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {items.map((item, idx) => (
             <div 
               key={idx} 
-              className="group bg-[#111] rounded-[2rem] border border-white/5 overflow-hidden hover:border-[#B23DEB]/40 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(178,61,235,0.1)] flex flex-col"
+              className="group bg-[#111] rounded-sm border border-white/5 overflow-hidden hover:border-[#B23DEB]/40 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(178,61,235,0.1)] flex flex-col"
             >
               {/* Card Preview Area */}
               <div className="h-56 w-full relative overflow-hidden bg-[#050505]">
@@ -73,7 +71,6 @@ const Explore = () => {
                 </div>
               </div>
 
-              {/* Card Body */}
               <div className="p-10 flex flex-col flex-grow">
                 <h3 className="text-2xl font-bold mb-3 tracking-tight group-hover:text-white transition-colors leading-snug">
                   {item.title}
@@ -82,7 +79,6 @@ const Explore = () => {
                   by <span className="text-[#B23DEB] font-semibold hover:underline cursor-pointer">{item.author}</span>
                 </p>
                 
-                {/* Footer of Card */}
                 <div className="mt-auto flex items-center justify-between pt-8 border-t border-white/5">
                   <div className="flex items-center gap-2 text-gray-400 font-mono text-sm group-hover:text-red-400 transition-colors">
                     <FiHeart className={`${idx === 0 ? "fill-red-500 text-red-500" : ""}`} /> 
