@@ -82,7 +82,7 @@ function Home() {
         </div>
       </section>
 
-      <section className=" relative">
+      <section className=" p-30 relative">
         <div className="container mx-auto px-6 p-4 text-center">
           <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-9">Nega aynan <span className="text-[#B23DEB]">Check UI?</span></h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">Platformamiz sizga eng qisqa vaqt ichida natijaga erishishingiz uchun barcha asboblarni taqdim etadi.</p>
