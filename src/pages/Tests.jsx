@@ -46,7 +46,7 @@ const Tests = () => {
   return (
     <div className="bg-[#0a0a0a] h-full py-10  ">
       {/* Header Section */}
-      <div className="flex justify-between items-end mb-12 max-w-7xl mx-auto border-b border-white/5 pb-8">
+      <div className="flex justify-between px-7 items-end mb-12 max-w-7xl mx-auto border-b border-white/5 pb-8">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
             Mavjud <span className="text-[#B23DEB]">Testlar</span>
@@ -66,7 +66,7 @@ const Tests = () => {
       </div>
 
       {/* Grid Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto pb-20">
+      <div className="grid grid-cols-1 px-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto pb-20">
         {tests.map((test) => (
           <div
             key={test.id}
