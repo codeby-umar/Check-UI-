@@ -17,6 +17,7 @@ import Settings from "./pages/Settings";
 import Chatui from "./pages/Chatui";
 import QuizPage from "./pages/QuizPage";
 import Coders from "./pages/Coders";
+import Tekshirish from "./pages/Tekshirish"
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -44,6 +45,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Layouts><Tests /></Layouts>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/homework"
+        element={
+          <ProtectedRoute>
+            <Layouts><Tekshirish /></Layouts>
           </ProtectedRoute>
         }
       />

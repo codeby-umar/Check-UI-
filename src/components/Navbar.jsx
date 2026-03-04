@@ -7,6 +7,8 @@ import { IoLogOut } from "react-icons/io5";
 import { AiFillCode } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { FaCalendarCheck } from "react-icons/fa";
+
 
 function Navbar() {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ function Navbar() {
   };
 
   return (
-    <div className="w-80 sticky top-0 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 z-100">
+    <div className="w-87 sticky top-0 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 z-100">
       {/* Logo Section */}
       <div className="mb-16">
         <a href="/" className="text-3xl font-black tracking-tighter text-white group">
@@ -34,13 +36,14 @@ function Navbar() {
       <nav className="flex-grow">
         <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-6">Menu</p>
         <ul className="space-y-2">
-          <NavItem to="/dashboard" icon={<IoMdAnalytics size="22" />} label="Dashboard" />
-          <NavItem to="/tests" icon={<RiPencilFill size="22" />} label="Tests" />
-          <NavItem to="/courses" icon={<HiClipboardDocumentList size="22" />} label="Courses" />
-          <NavItem to="/profile" icon={<RiAccountCircleFill size="22" />} label="Profile" />
-          <NavItem to="/leaderboard" icon={<MdLeaderboard size="22" />} label="Leaderboard" />
-          <NavItem to="/chat" icon={<MdMarkUnreadChatAlt size="22" />} label="Chat UI" />
-          <NavItem to="/code" icon={<AiFillCode size="22" />} label="Coders" />
+          <NavItem to="/dashboard" icon={<IoMdAnalytics size="25" />} label="Dashboard" />
+          <NavItem to="/tests" icon={<RiPencilFill size="27" />} label="Tests" />
+          <NavItem to="/courses" icon={<HiClipboardDocumentList size="27" />} label="Courses" />
+          <NavItem to="/profile" icon={<RiAccountCircleFill size="28" />} label="Profile" />
+          <NavItem to="/leaderboard" icon={<MdLeaderboard size="25" />} label="Leaderboard" />
+          <NavItem to="/chat" icon={<MdMarkUnreadChatAlt size="25" />} label="Chat UI" />
+          <NavItem to="/homework" icon={<FaCalendarCheck size="25" />} label="Check" />
+          <NavItem to="/code" icon={<AiFillCode size="25" />} label="Coders" />
         </ul>
       </nav>
 
