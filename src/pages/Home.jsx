@@ -50,7 +50,7 @@ function Home() {
             </h1>
             
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-12 font-light">
-              Check UI — bu zamonaviy dasturchilar uchun bilim va tajribani birlashtirgan platforma. Biz bilan intervyularga tayyorlaning va mahoratingizni oshiring.
+              Check UI — bu zamonaviy Oquvchilar uchun bilim va tajribani birlashtirgan platforma. Biz bilan o'zingizni sinang va mahoratingizni oshiring.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start">
@@ -82,9 +82,9 @@ function Home() {
         </div>
       </section>
 
-      <section className="py-32 relative">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">Nega aynan <span className="text-[#B23DEB]">Check UI?</span></h2>
+      <section className=" relative">
+        <div className="container mx-auto px-6 p-4 text-center">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-9">Nega aynan <span className="text-[#B23DEB]">Check UI?</span></h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">Platformamiz sizga eng qisqa vaqt ichida natijaga erishishingiz uchun barcha asboblarni taqdim etadi.</p>
         </div>
 
