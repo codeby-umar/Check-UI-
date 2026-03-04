@@ -1,81 +1,106 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import emailjs from '@emailjs/browser'; 
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  Radar, RadarChart, PolarGrid, PolarAngleAxis,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+} from "firebase/firestore";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import { 
   FiTrendingUp, FiActivity, FiPieChart, FiZap, 
-  FiArrowUpRight, FiCheckCircle, FiTerminal 
+  FiArrowUpRight, FiCheckCircle, FiTerminal, FiMail 
 } from "react-icons/fi";
 
 const Dashboard = () => {
   const [results, setResults] = useState([]);
-  const [analytics, setAnalytics] = useState({
-    avgScore: 0,
-    totalTests: 0,
-    growth: 0,
-    subjectData: [],
-    activityMap: {}
+  const [stats, setStats] = useState({
+    average: 0,
+    total: 0,
+    bestSubject: "-",
+    growth: 0
   });
+
+  // --- EMAILJS MANTIQI ---
+  const sendSMSResult = (res) => {
+    const templateParams = {
+      to_phone: "+998507121208", // Sening kodingdagi raqam
+      subject: res.subject,      
+      score: res.score,          
+      test_title: res.testTitle, 
+      message: `Tabriklaymiz! Siz ${res.subject} fanidan ${res.score}% natija qayd etdingiz.` 
+    };
+
+    emailjs.send(
+      'service_4bvzqy2',    // Service ID
+      'template_pa6vbdm',   // Template ID
+      templateParams, 
+      's3ey1weWzO5vZCz9N'   // Public Key
+    )
+    .then(() => {
+      alert("Natija telefoningizga yuborildi! ✅");
+    })
+    .catch((error) => {
+      console.error("EmailJS Error:", error);
+      alert("Xatolik yuz berdi! Sozlamalarni tekshiring.");
+    });
+  };
 
   useEffect(() => {
     if (!auth.currentUser) return;
     const q = query(
       collection(db, "results"),
       where("userId", "==", auth.currentUser.uid),
-      orderBy("date", "desc")
+      orderBy("date", "desc"),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setResults(data);
-      
+
       if (data.length > 0) {
-        const currentAvg = data.reduce((acc, curr) => acc + curr.score, 0) / data.length;
+        const avg = data.reduce((acc, curr) => acc + curr.score, 0) / data.length;
         const lastScore = data[0].score;
         const prevScore = data[1] ? data[1].score : lastScore;
         const growthRate = ((lastScore - prevScore) / (prevScore || 1)) * 100;
 
-        const subjects = {};
-        const activity = {};
-
-        data.forEach(r => {
-          // Radar chart uchun
-          const subName = r.subject || "Umumiy";
-          if (!subjects[subName]) subjects[subName] = { subject: subName, score: 0, count: 0 };
-          subjects[subName].score += r.score;
-          subjects[subName].count += 1;
-
-          // Activity Map (GitHub style) uchun
-          if (r.date) {
-            const d = r.date.toDate().toISOString().split('T')[0];
-            activity[d] = (activity[d] || 0) + 1;
-          }
-        });
-
-        setAnalytics({
-          avgScore: Math.round(currentAvg),
-          totalTests: data.length,
-          growth: growthRate.toFixed(1),
-          activityMap: activity,
-          subjectData: Object.values(subjects).map(s => ({
-            subject: s.subject,
-            score: Math.round(s.score / s.count),
-            fullMark: 100
-          }))
+        setStats({
+          average: Math.round(avg),
+          total: data.length,
+          bestSubject: [...data].sort((a, b) => b.score - a.score)[0].subject,
+          growth: growthRate.toFixed(1)
         });
       }
     });
     return () => unsubscribe();
   }, []);
 
+  const tileContent = ({ date, view }) => {
+    if (view === "month") {
+      const hasTest = results.some(
+        (res) => res.date?.toDate().toDateString() === date.toDateString(),
+      );
+      return hasTest ? (
+        <div className="h-1.5 w-1.5 bg-[#B23DEB] rounded-full mx-auto mt-1 animate-pulse shadow-[0_0_5px_#B23DEB]"></div>
+      ) : null;
+    }
+  };
+
   return (
-    /* ASOSIY KONTEYNER: h-screen va overflow-hidden orqali ekranga qamab qo'yamiz */
     <div className="h-screen w-full bg-[#0a0a0a] flex flex-col overflow-hidden text-white font-sans">
       
-      {/* Scroll bo'ladigan qism */}
       <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-10">
           
@@ -86,36 +111,35 @@ const Dashboard = () => {
                 <FiTerminal size={18} />
                 <span className="text-[10px] font-black uppercase tracking-[0.4em]">Neural Core v3.0</span>
               </div>
-              <h1 className="text-5xl font-black italic tracking-tighter uppercase">
+              <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">
                 User <span className="text-[#B23DEB] not-italic">Analytics</span>
               </h1>
             </div>
-            <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-4">
-              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">System Status</span>
-                <span className="text-emerald-400 text-xs font-black uppercase">Active & Secured</span>
-              </div>
-              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
-              </div>
+            <div className="flex gap-4">
+               <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">System Status</p>
+                    <p className="text-emerald-400 text-xs font-black uppercase">Online</p>
+                  </div>
+                  <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center border border-emerald-500/20">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
+                  </div>
+               </div>
             </div>
           </div>
 
           {/* 2. Key Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard title="Samaradorlik" value={`${analytics.avgScore}%`} trend={analytics.growth} sub="O'rtacha ko'rsatkich" icon={<FiTrendingUp/>} color="#B23DEB" />
-            <MetricCard title="Testlar" value={analytics.totalTests} trend="+2" sub="Jami urinishlar" icon={<FiActivity/>} color="#3B82F6" />
-            <MetricCard title="O'sish" value={`${analytics.growth}%`} trend={analytics.growth} sub="Oxirgi natijadan" icon={<FiArrowUpRight/>} color="#10B981" />
-            <MetricCard title="Rank" value="PRO" trend="0" sub="Bilim darajasi" icon={<FiZap/>} color="#F59E0B" />
+            <MetricCard title="Samaradorlik" value={`${stats.average}%`} trend={stats.growth} sub="O'rtacha ko'rsatkich" icon={<FiTrendingUp/>} color="#B23DEB" />
+            <MetricCard title="Testlar" value={stats.total} trend="+1" sub="Jami urinishlar" icon={<FiActivity/>} color="#3B82F6" />
+            <MetricCard title="O'sish" value={`${stats.growth}%`} trend={stats.growth} sub="Oxirgi natijadan" icon={<FiArrowUpRight/>} color="#10B981" />
+            <MetricCard title="Eng yaxshi" value={stats.bestSubject} trend="0" sub="Asosiy yo'nalish" icon={<FiZap/>} color="#F59E0B" />
           </div>
 
-          {/* 3. Main Charts Section */}
+          {/* 3. Charts & Calendar Row */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Area Chart */}
             <div className="lg:col-span-8 bg-[#111] border border-white/5 p-8 rounded-[3rem] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-                <FiPieChart size={200}/>
-              </div>
               <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-8 text-gray-500 flex items-center gap-2">
                 <FiActivity className="text-[#B23DEB]"/> Progress Dinamikasi
               </h3>
@@ -130,100 +154,72 @@ const Dashboard = () => {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
                     <XAxis dataKey="date" hide />
-                    <YAxis stroke="rgba(255,255,255,0.2)" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke="rgba(255,255,255,0.2)" fontSize={10} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #222', borderRadius: '15px'}} />
-                    <Area type="monotone" dataKey="score" stroke="#B23DEB" strokeWidth={4} fill="url(#purpleGlow)" dot={{ r: 4, fill: '#B23DEB', strokeWidth: 0 }} />
+                    <Area type="monotone" dataKey="score" stroke="#B23DEB" strokeWidth={4} fill="url(#purpleGlow)" dot={{ r: 4, fill: '#B23DEB' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Radar Chart */}
-            <div className="lg:col-span-4 bg-[#111] border border-white/5 p-8 rounded-[3rem] flex flex-col items-center justify-between">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] self-start text-gray-500 mb-6">Skills Radar</h3>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={analytics.subjectData}>
-                    <PolarGrid stroke="rgba(255,255,255,0.05)" />
-                    <PolarAngleAxis dataKey="subject" tick={{fill: '#444', fontSize: 10, fontWeight: 'bold'}} />
-                    <Radar name="Ball" dataKey="score" stroke="#B23DEB" fill="#B23DEB" fillOpacity={0.5} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-[10px] font-bold text-gray-600 uppercase mt-4">Balanslangan ko'rsatkich</p>
+            {/* Activity Calendar */}
+            <div className="lg:col-span-4 bg-[#111] border border-white/5 p-8 rounded-[3rem] flex flex-col items-center">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] self-start text-gray-500 mb-6">Activity Log</h3>
+              <style>{`
+                .react-calendar { background: transparent !important; border: none !important; width: 100% !important; color: white; font-family: inherit; }
+                .react-calendar__tile--active { background: #B23DEB !important; border-radius: 12px; color: white !important; }
+                .react-calendar__tile { height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
+                .react-calendar__navigation button { color: #B23DEB; font-weight: bold; }
+                .react-calendar__month-view__weekdays__weekday { color: #444; text-decoration: none; font-size: 0.6rem; text-transform: uppercase; font-weight: 900; }
+              `}</style>
+              <Calendar tileContent={tileContent} className="custom-cal" />
             </div>
           </div>
 
-          {/* 4. GitHub Style Activity Grid */}
-          <div className="bg-[#111] border border-white/5 p-8 rounded-[3rem]">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-6 text-gray-500 flex items-center gap-2">
-              <FiCheckCircle className="text-[#B23DEB]"/> Kunlik Faollik (Deployment Map)
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {[...Array(70)].map((_, i) => {
-                const colors = ['bg-white/5', 'bg-[#B23DEB]/20', 'bg-[#B23DEB]/40', 'bg-[#B23DEB]/60', 'bg-[#B23DEB]'];
-                // Simulation: i % 5 va i % 3 orqali tasodifiy faollik ko'rsatamiz
-                const intensity = (i % 5 === 0 || i % 3 === 0) ? Math.floor(Math.random() * 5) : 0;
-                return (
-                  <div 
-                    key={i} 
-                    className={`w-4 h-4 rounded-[3px] ${colors[intensity]} transition-all hover:ring-2 ring-white/30 cursor-pointer`}
-                    title={`Activity: ${intensity}`}
-                  ></div>
-                )
-              })}
-            </div>
-            <div className="mt-6 flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">
-              <span>Less</span>
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 bg-white/5 rounded-sm"></div>
-                <div className="w-3 h-3 bg-[#B23DEB]/30 rounded-sm"></div>
-                <div className="w-3 h-3 bg-[#B23DEB]/60 rounded-sm"></div>
-                <div className="w-3 h-3 bg-[#B23DEB] rounded-sm"></div>
-              </div>
-              <span>More</span>
-            </div>
-          </div>
+          {/* 4. Recent Attempts Grid */}
+          <h2 className="text-xs font-black uppercase tracking-[0.4em] text-gray-500">So'nggi urinishlar</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-12">
+            {results.map((res) => (
+              <div key={res.id} className="group bg-[#111] border border-white/5 p-8 rounded-[2.5rem] hover:border-[#B23DEB]/30 transition-all duration-500 relative overflow-hidden">
+                
+                {/* EmailJS/SMS Button */}
+                <button 
+                  onClick={() => sendSMSResult(res)}
+                  className="absolute right-4 top-4 bg-[#B23DEB] text-white w-10 h-10 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-10 group-hover:translate-x-0 shadow-[0_0_15px_#B23DEB55]"
+                >
+                  <FiMail size={18} />
+                </button>
 
-          {/* 5. Recent Logs (Table) */}
-          <div className="bg-[#111] border border-white/5 p-8 rounded-[3rem] overflow-hidden">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-8 text-gray-500">So'nggi protokollar</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-gray-600 text-[10px] uppercase tracking-[0.3em] border-b border-white/5">
-                    <th className="pb-6 font-black">Test Title</th>
-                    <th className="pb-6 font-black text-center">Efficiency</th>
-                    <th className="pb-6 font-black text-center">Status</th>
-                    <th className="pb-6 font-black text-right">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {results.slice(0, 6).map((res) => (
-                    <tr key={res.id} className="group hover:bg-white/[0.02] transition-colors">
-                      <td className="py-5 font-bold text-sm italic tracking-tight text-gray-300 group-hover:text-white transition-colors">
-                        {res.testTitle}
-                      </td>
-                      <td className="py-5 font-mono text-[#B23DEB] font-black text-center text-lg">
-                        {res.score}%
-                      </td>
-                      <td className="py-5 text-center">
-                        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                          res.score >= 70 
-                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' 
-                          : 'bg-red-500/10 text-red-500 border-red-500/20'
-                        }`}>
-                          {res.score >= 70 ? 'Passed' : 'Review'}
-                        </span>
-                      </td>
-                      <td className="py-5 text-right text-gray-600 text-[10px] font-black uppercase tracking-tighter">
-                        {res.date?.toDate().toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                <div className="mb-6">
+                  <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black text-gray-400 uppercase tracking-widest">
+                    {res.subject}
+                  </span>
+                </div>
+
+                <h3 className="text-sm font-black italic uppercase text-gray-300 mb-8 leading-tight group-hover:text-white transition-colors">
+                  {res.testTitle}
+                </h3>
+
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-black tracking-tighter italic">
+                      {res.score}<span className="text-xs text-gray-600 not-italic ml-1">%</span>
+                    </span>
+                  </div>
+                  <span className={`text-[8px] font-black uppercase tracking-widest ${res.score >= 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                    {res.score >= 70 ? 'Optimal' : 'Needs Review'}
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                   <div 
+                    className={`h-full transition-all duration-1000 ${res.score >= 70 ? 'bg-[#10B981]' : 'bg-[#F59E0B]'}`}
+                    style={{ width: `${res.score}%` }}
+                   ></div>
+                </div>
+              </div>
+            ))}
           </div>
 
         </div>
@@ -239,11 +235,9 @@ const Dashboard = () => {
   );
 };
 
+// MetricCard Component
 const MetricCard = ({ title, value, sub, icon, color, trend }) => (
   <div className="bg-[#111] border border-white/5 p-6 rounded-[2.5rem] hover:border-[#B23DEB]/30 transition-all duration-500 group relative overflow-hidden">
-    <div className="absolute -right-4 -bottom-4 text-white/[0.02] group-hover:text-white/[0.05] transition-all transform group-hover:scale-150 group-hover:-rotate-12">
-      <div className="text-8xl">{icon}</div>
-    </div>
     <div className="flex justify-between items-start mb-6">
       <div 
         className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-lg border transition-transform group-hover:scale-110"
@@ -251,14 +245,14 @@ const MetricCard = ({ title, value, sub, icon, color, trend }) => (
       >
         {icon}
       </div>
-      <div className={`px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 ${parseFloat(trend) >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-        {parseFloat(trend) >= 0 ? <FiArrowUpRight/> : <FiTrendingUp className="rotate-180"/>} {Math.abs(trend)}%
+      <div className={`px-2 py-1 rounded-lg text-[9px] font-black flex items-center gap-1 ${parseFloat(trend) >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+        {trend}%
       </div>
     </div>
     <div className="relative z-10">
       <h3 className="text-4xl font-black mb-1 tracking-tighter italic">{value}</h3>
       <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">{title}</p>
-      <p className="text-[9px] text-gray-400 mt-4 opacity-40 font-bold tracking-widest uppercase">{sub}</p>
+      <p className="text-[9px] text-gray-600 mt-4 opacity-40 font-bold tracking-widest uppercase leading-none">{sub}</p>
     </div>
   </div>
 );
