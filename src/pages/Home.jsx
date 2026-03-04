@@ -54,7 +54,7 @@ function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start">
-              <Link to="/signup" className="group relative px-10 py-5 bg-[#B23DEB] rounded-2xl text-xl font-bold transition-all duration-300 hover:shadow-[0_0_40px_rgba(178,61,235,0.4)] hover:scale-105 active:scale-95">
+              <Link to="/login" className="group relative px-10 py-5 bg-[#B23DEB] rounded-2xl text-xl font-bold transition-all duration-300 hover:shadow-[0_0_40px_rgba(178,61,235,0.4)] hover:scale-105 active:scale-95">
                 Boshlash →
               </Link>
               <button className="text-white hover:text-[#B23DEB] transition-colors font-bold text-xl">
@@ -72,7 +72,7 @@ function Home() {
       <section className="py-20 border-y border-white/5 bg-white/2">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[["10k+", "Users"], ["500+", "Lessons"], ["98%", "Success"], ["24/7", "Support"]].map(([val, label]) => (
+            {[["34+", "Users"], ["3+", "Lessons"], ["98%", "Success"], ["24/7", "Support"]].map(([val, label]) => (
               <div key={label} className="group">
                 <h4 className="text-4xl md:text-5xl font-black text-white group-hover:text-[#B23DEB] transition-colors">{val}</h4>
                 <p className="text-gray-500 uppercase tracking-widest text-xs mt-2">{label}</p>
