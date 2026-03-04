@@ -8,6 +8,8 @@ import { AiFillCode } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { FaCalendarCheck } from "react-icons/fa";
+import { IoChatbubbles } from "react-icons/io5";
+
 
 
 function Navbar() {
@@ -34,11 +36,11 @@ function Navbar() {
 
       {/* Main Navigation */}
       <nav className="flex-grow">
-        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-6">Menu</p>
         <ul className="space-y-2">
           <NavItem to="/dashboard" icon={<IoMdAnalytics size="25" />} label="Dashboard" />
           <NavItem to="/tests" icon={<RiPencilFill size="27" />} label="Tests" />
           <NavItem to="/courses" icon={<HiClipboardDocumentList size="27" />} label="Courses" />
+          <NavItem to="/live" icon={<IoChatbubbles  size="27" />} label="Live Chat" />
           <NavItem to="/profile" icon={<RiAccountCircleFill size="28" />} label="Profile" />
           <NavItem to="/leaderboard" icon={<MdLeaderboard size="25" />} label="Leaderboard" />
           <NavItem to="/chat" icon={<MdMarkUnreadChatAlt size="25" />} label="Chat UI" />
@@ -48,7 +50,7 @@ function Navbar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="pt-8 border-t border-white/5 space-y-2">
+      <div className="pt-9   border-white/5 space-y-2">
         <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-6">Account</p>
         <NavItem to="/setting" icon={<IoMdSettings size="22" />} label="Settings" />
         

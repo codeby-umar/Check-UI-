@@ -17,7 +17,8 @@ import Settings from "./pages/Settings";
 import Chatui from "./pages/Chatui";
 import QuizPage from "./pages/QuizPage";
 import Coders from "./pages/Coders";
-import Tekshirish from "./pages/Tekshirish"
+import Tekshirish from "./pages/Tekshirish";
+import LivingChat from "./pages/LivingChat";
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -53,6 +54,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Layouts><Tekshirish /></Layouts>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/live"
+        element={
+          <ProtectedRoute>
+            <Layouts><LivingChat /></Layouts>
           </ProtectedRoute>
         }
       />
