@@ -22,7 +22,7 @@ function Navbar() {
   };
 
   return (
-    <div className="w-80 h-screen sticky top-0 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 z-[100]">
+    <div className="w-80 sticky top-0 bg-[#0a0a0a] border-r border-white/5 flex flex-col p-8 z-100">
       {/* Logo Section */}
       <div className="mb-16">
         <a href="/" className="text-3xl font-black tracking-tighter text-white group">

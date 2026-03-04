@@ -1,133 +1,213 @@
-import { useState, useEffect } from "react";
-import { db } from "../firebase"; // Firebase sozlamalaringiz
-import { collection, getDocs } from "firebase/firestore";
-import { Search, BookOpen, Clock, Star, PlayCircle } from "lucide-react"; 
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { db, auth } from "../firebase";
+import { doc, getDoc, addDoc, collection } from "firebase/firestore";
+import { Timer, HelpCircle, ChevronRight, Trophy, LayoutDashboard, BrainCircuit, Rocket } from "lucide-react";
 
-const Courses = () => {
-  const [courses, setCourses] = useState([]);
-  const [filter, setFilter] = useState("Hammasi");
-  const [searchTerm, setSearchTerm] = useState("");
+const QuizPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [test, setTest] = useState(null);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const querySnapshot = await getDocs(collection(db, "courses"));
-      const coursesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCourses(coursesData);
+    const fetchTestData = async () => {
+      const docRef = doc(db, "tests", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setTest(data);
+        setTimeLeft(data.timeLimit * 60); 
+      }
     };
-    fetchCourses();
-  }, []);
+    fetchTestData();
+  }, [id]);
 
+  useEffect(() => {
+    if (timeLeft > 0 && !isFinished) {
+      const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0 && test && !isFinished) {
+      finishQuiz();
+    }
+  }, [timeLeft, isFinished, test]);
 
-  const categories = ["All", "Math", "English", "programming", "Physics"];
+  const handleAnswer = (isCorrect) => {
+    let currentScore = score;
+    if (isCorrect) {
+      currentScore = score + 1;
+      setScore(currentScore);
+    }
+    
+    if (currentIdx + 1 < test.questions.length) {
+      setCurrentIdx(currentIdx + 1);
+    } else {
+      finishQuiz(currentScore);
+    }
+  };
 
-  const filteredCourses = courses.filter(course => {
-    const matchesFilter = filter === "Hammasi" || course.category === filter;
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const finishQuiz = async (finalScore = score) => {
+    setIsFinished(true);
+    const percent = Math.round((finalScore / test.questions.length) * 100);
+
+    try {
+      await addDoc(collection(db, "results"), {
+        userId: auth.currentUser.uid,
+        testTitle: test.title,
+        score: percent,
+        correctAnswers: finalScore,
+        totalQuestions: test.questions.length,
+        date: new Date()
+      });
+    } catch (e) {
+      console.error("Xatolik natijani saqlashda: ", e);
+    }
+  };
+
+  if (!test) return (
+    <div className="h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+      <BrainCircuit className="text-[#B23DEB] animate-spin" size={60} />
+      <p className="text-[#B23DEB] font-black tracking-[0.3em] uppercase animate-pulse">Test yuklanmoqda...</p>
+    </div>
+  );
 
   return (
-    <div className="p-6 ">
-      <div className="max-w-7xl mx-auto mb-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Our courses</h1>
-            <p className="text-slate-500 mt-2">The best content to increase your knowledge</p>
-          </div>
-
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Kurs qidirish..."
-              className="w-full pl-12 pr-4 py-4 border-none rounded-xl border-[0.5px] border-black focus:ring-2 ring-indigo-500 outline-none transition-all"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-3 mt-8 overflow-x-auto pb-2 no-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-6 py-2.5 rounded-sm  text-sm transition-all whitespace-nowrap ${
-                filter === cat 
-                ? "bg-[#B23DEB] text-white shadow-lg shadow-indigo-200" 
-                : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-100"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredCourses.map((course) => (
-          <div 
-            key={course.id} 
-            className="group bg-white rounded-sm overflow-hidden border border-slate-100 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 flex flex-col"
-          >
-            <div className="relative h-52 overflow-hidden">
-              <img 
-                src={course.image || "https://via.placeholder.com/400x250"} 
-                alt={course.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute top-4 left-4">
-                <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-sm text-[10px] font-black uppercase tracking-widest text-indigo-600">
-                  {course.level || "Boshlang'ich"}
-                </span>
+    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar flex flex-col items-center">
+      
+      {!isFinished ? (
+        <div className="w-full max-w-4xl animate-fade-in">
+          
+          {/* 1. Header: Info & Timer */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 bg-white/[0.02] border border-white/5 p-6 rounded-[2.5rem] backdrop-blur-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[#B23DEB]/10 rounded-2xl flex items-center justify-center border border-[#B23DEB]/20">
+                <span className="text-xl font-black text-[#B23DEB]">{currentIdx + 1}</span>
               </div>
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 duration-300">
-                <PlayCircle className="text-white w-14 h-14" />
+              <div>
+                <h3 className="text-white font-black uppercase tracking-wider text-sm">Savol Progressi</h3>
+                <div className="flex gap-1 mt-1">
+                  {test.questions.map((_, i) => (
+                    <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i <= currentIdx ? 'w-6 bg-[#B23DEB]' : 'w-2 bg-white/10'}`}></div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="p-8 flex flex-col flex-1">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center text-amber-500 gap-1">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span className="text-sm font-bold text-slate-700">{course.rating || "4.8"}</span>
-                </div>
-                <div className="flex items-center text-slate-400 gap-1">
-                  <BookOpen className="w-4 h-4" />
-                  <span className="text-[12px] font-medium">{course.lessonsCount || 12} dars</span>
-                </div>
+            <div className={`flex items-center gap-4 px-8 py-4 rounded-2xl border-2 transition-all duration-500 ${timeLeft < 30 ? 'border-red-500 animate-pulse bg-red-500/10' : 'border-[#B23DEB]/30 bg-[#B23DEB]/5'}`}>
+              <Timer className={timeLeft < 30 ? 'text-red-500' : 'text-[#B23DEB]'} size={24} />
+              <span className={`text-2xl font-mono font-black ${timeLeft < 30 ? 'text-red-500' : 'text-white'}`}>
+                {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Question Card */}
+          <div className="bg-white/[0.03] border border-white/5 rounded-[3.5rem] p-8 md:p-16 shadow-2xl relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 text-white/[0.02] -rotate-12">
+               <HelpCircle size={250} />
+            </div>
+            
+            <h2 className="text-2xl md:text-4xl font-black text-white leading-tight mb-12 relative z-10">
+              {test.questions[currentIdx].text}
+            </h2>
+            
+            <div className="grid grid-cols-1 gap-4 relative z-10">
+              {test.questions[currentIdx].options.map((opt, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => handleAnswer(opt.isCorrect)}
+                  className="group flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-[#B23DEB] hover:border-[#B23DEB] hover:shadow-[0_10px_30px_rgba(178,61,235,0.3)] transition-all duration-300 text-left"
+                >
+                  <span className="text-lg font-bold text-gray-300 group-hover:text-white transition-colors">{opt.text}</span>
+                  <ChevronRight className="text-gray-600 group-hover:text-white transition-all transform group-hover:translate-x-2" size={24} />
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <p className="text-center text-gray-600 text-[10px] mt-8 uppercase font-black tracking-[0.5em]">
+            Cyber-Battle Protocol Alpha-7
+          </p>
+
+        </div>
+      ) : (
+        /* 3. Result View */
+        <div className="w-full max-w-xl animate-scale-up mt-10">
+          <div className="bg-white/[0.02] border border-white/5 p-12 rounded-[4rem] backdrop-blur-3xl text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/10 to-transparent opacity-50"></div>
+            
+            <div className="relative z-10">
+              <div className="w-24 h-24 bg-yellow-500/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-yellow-500/30">
+                <Trophy className="text-yellow-500" size={48} />
+              </div>
+              
+              <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Natija Yakunlandi!</h2>
+              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-10">Sizning umumiy natijangiz</p>
+
+              <div className="relative inline-block mb-12">
+                 <div className="text-8xl font-black text-white drop-shadow-[0_0_30px_rgba(178,61,235,0.5)]">
+                   {Math.round((score / test.questions.length) * 100)}<span className="text-[#B23DEB] text-4xl">%</span>
+                 </div>
+                 <div className="absolute -right-8 -top-4 bg-emerald-500 text-[#0a0a0a] text-[10px] font-black px-3 py-1 rounded-full uppercase">
+                   Passed
+                 </div>
               </div>
 
-              <h3 className="text-xl font-extrabold text-slate-800 mb-3 group-hover:text-indigo-600 transition-colors">
-                {course.title}
-              </h3>
-              
-              <p className="text-slate-500 text-sm line-clamp-2 mb-6">
-                {course.description || "Ushbu kurs davomida siz eng kerakli ko'nikmalarni amaliy mashqlar orqali o'rganasiz."}
-              </p>
+              <div className="grid grid-cols-2 gap-4 mb-12">
+                 <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
+                    <p className="text-gray-500 text-[10px] font-black uppercase mb-1">To'g'ri</p>
+                    <p className="text-2xl font-black text-white">{score}</p>
+                 </div>
+                 <div className="bg-white/5 p-4 rounded-3xl border border-white/5">
+                    <p className="text-gray-500 text-[10px] font-black uppercase mb-1">Xato</p>
+                    <p className="text-2xl font-black text-red-500">{test.questions.length - score}</p>
+                 </div>
+              </div>
 
-              <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-xs font-bold">{course.duration || "4 soat"}</span>
-                </div>
-                <button className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-200 transition-all duration-300">
-                  Boshlash
+              <div className="flex flex-col gap-4">
+                <button 
+                  onClick={() => navigate("/dashboard")}
+                  className="flex items-center justify-center gap-3 w-full py-6 bg-[#B23DEB] text-white rounded-[2rem] font-black shadow-[0_20px_40px_rgba(178,61,235,0.3)] hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-sm group"
+                >
+                  <LayoutDashboard size={20} className="group-hover:rotate-12 transition-transform" />
+                  Dashboardga qaytish
+                </button>
+                <button 
+                   onClick={() => window.location.reload()}
+                   className="flex items-center justify-center gap-3 w-full py-6 bg-white/5 text-gray-400 rounded-[2rem] font-black border border-white/10 hover:bg-white/10 hover:text-white transition-all uppercase tracking-widest text-sm"
+                >
+                  <Rocket size={20} />
+                  Qayta urinish
                 </button>
               </div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {filteredCourses.length === 0 && (
-        <div className="text-center py-20">
-          <div className="inline-block p-10   border-slate-200">
-            <p className="text-slate-400 font-bold text-lg">No courses found in this column...</p>
-          </div>
         </div>
       )}
+
+      {/* Styles */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
+        
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scale-up {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-scale-up { animation: scale-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+      `}</style>
     </div>
   );
 };
 
-export default Courses;
+export default QuizPage;

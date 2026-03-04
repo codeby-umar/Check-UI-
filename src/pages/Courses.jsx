@@ -1,175 +1,197 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { 
-  Search, BookOpen, Clock, Star, 
+  Search, Clock, Star, 
   PlayCircle, Filter, Sparkles, 
-  Layers, ArrowRight, BookMarked 
+  Layers, ArrowRight, BookMarked,
+  ShieldCheck, Zap
 } from "lucide-react"; 
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [filter, setFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const querySnapshot = await getDocs(collection(db, "courses"));
-      const coursesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // getDocs o'rniga onSnapshot (real-time) ishlatish yaxshiroq
+    const q = query(collection(db, "courses"), orderBy("title", "asc"));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const coursesData = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      }));
       setCourses(coursesData);
-    };
-    fetchCourses();
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const categories = ["All", "Math", "English", "Programming", "Physics"];
 
   const filteredCourses = courses.filter(course => {
     const matchesFilter = filter === "All" || course.category === filter;
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = course.title?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
-    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar">
-      <div className="max-w-7xl mx-auto mb-16">
-        
-        {/* 1. Header & Search Section */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-[#B23DEB] font-black tracking-[0.3em] uppercase text-[10px]">
-              <Sparkles size={16} /> O'quv Platformasi
+    <div className="h-screen w-full bg-[#0a0a0a] flex flex-col overflow-hidden text-white font-sans">
+      
+      {/* 1. Header Area (Fixed) */}
+      <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar">
+        <div className="max-w-7xl mx-auto">
+          
+          {/* Top Banner & Search */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12 mb-16">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 bg-[#B23DEB]/10 border border-[#B23DEB]/20 px-4 py-2 rounded-2xl">
+                <Sparkles size={14} className="text-[#B23DEB]" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B23DEB]">Neural Academy v2.0</span>
+              </div>
+              <h1 className="text-6xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.9]">
+                Elite <span className="text-[#B23DEB] not-italic">Modules</span>
+              </h1>
+              <p className="text-gray-500 font-bold text-sm max-w-sm uppercase tracking-widest leading-relaxed">
+                Tizimning eng yuqori darajadagi ta'lim protokollari bilan tanishing.
+              </p>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase italic">
-              Premium <span className="text-[#B23DEB] not-italic">Kurslar</span>
-            </h1>
-            <p className="text-gray-500 font-medium max-w-md">
-              Bilimingizni oshirish uchun eng yuqori sifatli va eksklyuziv kontentlar to'plami.
-            </p>
-          </div>
 
-          <div className="relative w-full lg:w-[450px] group">
-            <div className="absolute inset-0 bg-[#B23DEB]/20 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
-            <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-[2rem] px-6 py-2 backdrop-blur-xl group-focus-within:border-[#B23DEB]/50 transition-all">
-              <Search className="text-gray-500 group-focus-within:text-[#B23DEB] transition-colors" size={20} />
-              <input
-                type="text"
-                placeholder="Kurs nomini kiriting..."
-                className="w-full bg-transparent border-none outline-none py-4 px-4 text-white placeholder:text-gray-600 font-bold"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Categories Filter */}
-        <div className="flex items-center gap-4 mt-12 overflow-x-auto pb-4 no-scrollbar">
-          <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-[#B23DEB]">
-            <Filter size={20} />
-          </div>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-8 py-3.5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
-                filter === cat 
-                ? "bg-[#B23DEB] text-white border-[#B23DEB] shadow-[0_10px_25px_rgba(178,61,235,0.4)] scale-105" 
-                : "bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/20 hover:text-white"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 3. Courses Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-20">
-        {filteredCourses.map((course) => (
-          <div 
-            key={course.id} 
-            className="group relative bg-white/[0.02] rounded-[3.5rem] overflow-hidden border border-white/5 hover:border-[#B23DEB]/30 transition-all duration-500 flex flex-col hover:-translate-y-2"
-          >
-            {/* Image Section */}
-            <div className="relative h-64 overflow-hidden p-4">
-              <div className="w-full h-full rounded-[2.5rem] overflow-hidden relative">
-                <img 
-                  src={course.image || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop"} 
-                  alt={course.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-80"
+            <div className="relative w-full lg:w-[500px]">
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#B23DEB] to-blue-600 rounded-[2.5rem] blur opacity-20"></div>
+              <div className="relative flex items-center bg-[#111] border border-white/5 rounded-[2.5rem] px-8 py-2">
+                <Search className="text-gray-600" size={22} />
+                <input
+                  type="text"
+                  placeholder="KURS QIDIRISH..."
+                  className="w-full bg-transparent border-none outline-none py-5 px-5 text-white placeholder:text-gray-800 font-black uppercase text-xs tracking-widest"
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
-                
-                {/* Overlay Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
-                  <div className="w-16 h-16 bg-[#B23DEB] rounded-full flex items-center justify-center shadow-[0_0_30px_#B23DEB] scale-50 group-hover:scale-100 transition-transform duration-500">
-                    <PlayCircle className="text-white fill-white" size={30} />
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Categories Navigator */}
+          <div className="flex items-center gap-4 mb-12 overflow-x-auto pb-4 no-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className={`px-10 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all border-2 ${
+                  filter === cat 
+                  ? "bg-[#B23DEB] text-white border-[#B23DEB] shadow-[0_15px_40px_rgba(178,61,235,0.3)] -translate-y-1" 
+                  : "bg-transparent text-gray-600 border-white/5 hover:border-[#B23DEB]/30 hover:text-white"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* 3. Courses Grid */}
+          {loading ? (
+             <div className="flex flex-col items-center py-40 opacity-20">
+                <div className="w-12 h-12 border-4 border-t-[#B23DEB] border-white/10 rounded-full animate-spin"></div>
+             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-24">
+              {filteredCourses.map((course) => (
+                <div 
+                  key={course.id} 
+                  className="group relative bg-[#111] rounded-[4rem] border border-white/5 hover:border-[#B23DEB]/40 transition-all duration-700 flex flex-col"
+                >
+                  {/* Visual Header */}
+                  <div className="relative h-72 p-5">
+                    <div className="w-full h-full rounded-[3.2rem] overflow-hidden relative">
+                      <img 
+                        src={course.imageUrl || "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=800&auto=format&fit=crop"} 
+                        alt={course.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 grayscale-[50%] group-hover:grayscale-0"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-[#111]/20 to-transparent"></div>
+                      
+                      {/* Floating Badges */}
+                      <div className="absolute top-6 left-6 flex flex-col gap-2">
+                        <span className="bg-black/80 backdrop-blur-xl border border-white/10 px-4 py-1.5 rounded-2xl text-[8px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
+                          <ShieldCheck size={10} /> Certified
+                        </span>
+                        <span className="bg-[#B23DEB] px-4 py-1.5 rounded-2xl text-[8px] font-black uppercase tracking-widest text-white shadow-lg">
+                          {course.category}
+                        </span>
+                      </div>
+
+                      {/* Play Action */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-150 group-hover:scale-100">
+                        <div className="w-20 h-20 bg-white text-black rounded-full flex items-center justify-center shadow-2xl">
+                          <PlayCircle size={40} className="fill-current" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-10 pt-2 flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-1.5 text-yellow-500">
+                        <Star size={14} className="fill-current" />
+                        <span className="text-xs font-black">4.9</span>
+                      </div>
+                      <div className="h-[1px] flex-1 mx-4 bg-white/5"></div>
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Layers size={14} className="text-[#B23DEB]" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">12 Modules</span>
+                      </div>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-white mb-4 group-hover:text-[#B23DEB] transition-colors leading-tight italic uppercase tracking-tighter">
+                      {course.title}
+                    </h3>
+                    
+                    <p className="text-gray-500 text-[11px] font-bold uppercase tracking-wider line-clamp-2 mb-10 leading-relaxed opacity-60">
+                      {course.description || "Tizimning maxfiy o'quv protokoli orqali bilimingizni yangilang."}
+                    </p>
+
+                    {/* Footer */}
+                    <div className="mt-auto flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-gray-400 bg-white/5 px-5 py-2.5 rounded-2xl border border-white/5">
+                        <Clock size={14} className="text-[#B23DEB]" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">4.5 Hours</span>
+                      </div>
+                      
+                      <button className="w-14 h-14 bg-white hover:bg-[#B23DEB] text-black hover:text-white rounded-full flex items-center justify-center transition-all duration-500 hover:rotate-[-45deg] shadow-xl">
+                        <ArrowRight size={20} strokeWidth={3} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <div className="absolute top-6 left-6">
-                  <span className="bg-[#0a0a0a]/60 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-[#B23DEB]">
-                    {course.level || "Boshlang'ich"}
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
+          )}
 
-            {/* Content Section */}
-            <div className="p-10 pt-4 flex flex-col flex-1">
-              <div className="flex items-center gap-6 mb-6">
-                <div className="flex items-center text-yellow-500 gap-1.5 bg-yellow-500/5 px-3 py-1 rounded-xl border border-yellow-500/10">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  <span className="text-xs font-black">{course.rating || "4.8"}</span>
-                </div>
-                <div className="flex items-center text-gray-500 gap-1.5">
-                  <Layers className="w-4 h-4 text-[#B23DEB]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">{course.lessonsCount || 12} Modul</span>
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-black text-white mb-4 group-hover:text-[#B23DEB] transition-colors leading-tight italic uppercase tracking-tighter">
-                {course.title}
-              </h3>
-              
-              <p className="text-gray-500 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
-                {course.description || "Ushbu eksklyuziv kurs davomida siz eng zamonaviy texnologiyalarni mutaxassislardan o'rganasiz."}
-              </p>
-
-              {/* Card Footer */}
-              <div className="mt-auto pt-8 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-gray-500 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
-                  <Clock className="w-4 h-4 text-[#B23DEB]" />
-                  <span className="text-[10px] font-black uppercase tracking-tighter">{course.duration || "4h 30m"}</span>
-                </div>
-                
-                <button className="flex items-center gap-2 bg-white text-[#0a0a0a] px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#B23DEB] hover:text-white hover:shadow-[0_10px_20px_rgba(178,61,235,0.3)] transition-all duration-300">
-                  Start <ArrowRight size={14} />
-                </button>
-              </div>
+          {/* Empty State */}
+          {!loading && filteredCourses.length === 0 && (
+            <div className="text-center py-40">
+              <BookMarked className="mx-auto text-white/5 mb-8" size={100} />
+              <p className="text-gray-700 font-black text-2xl uppercase tracking-[0.5em]">No Data Found</p>
+              <button 
+                onClick={() => {setFilter("All"); setSearchTerm("");}}
+                className="mt-10 px-8 py-3 bg-white/5 border border-white/10 rounded-2xl text-[#B23DEB] text-[10px] font-black uppercase tracking-widest hover:bg-[#B23DEB] hover:text-white transition-all"
+              >
+                Reset Database Filter
+              </button>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
 
-      {/* 4. Empty State */}
-      {filteredCourses.length === 0 && (
-        <div className="text-center py-40 animate-pulse">
-          <BookMarked className="mx-auto text-white/5 mb-6" size={80} />
-          <p className="text-gray-600 font-black text-xl uppercase tracking-[0.3em]">Kurslar topilmadi</p>
-          <button 
-            onClick={() => {setFilter("All"); setSearchTerm("");}}
-            className="mt-6 text-[#B23DEB] font-bold underline underline-offset-8"
-          >
-            Filtrlarni tozalash
-          </button>
-        </div>
-      )}
-
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB55; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
     </div>

@@ -3,9 +3,9 @@ import Navbars from "../components/Navbars";
 
 function Layouts({ children }) {
   return (
-    <div className="h-screen  flex">
+    <div className="flex h-full">
       <Navbar />
-      <div className="w-full">
+      <div className="h-full w-full">
         <Navbars />
         <div>{children}</div>
       </div>
