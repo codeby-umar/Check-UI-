@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { 
-  Camera, Save, ShieldCheck, Zap, 
-  BellRing, Crown, Settings as SettingsIcon,
-  RefreshCw, Fingerprint, Activity, Mail, 
-  Lock, ShieldAlert, Cpu, ChevronDown
+  Camera, Save, ShieldCheck, Zap, BellRing, Crown, Settings as SettingsIcon,
+  RefreshCw, Fingerprint, Activity, Mail, Lock, ShieldAlert, Cpu, ChevronDown, Check
 } from "lucide-react";
 
 const Settings = () => {
+  const [loading, setLoading] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  const [biometric, setBiometric] = useState(false);
   const [adminData, setAdminData] = useState({
     name: "Yuklanmoqda...",
     email: "",
     role: "Bosh Admin",
-    image: "https://api.dicebear.com/7.x/shapes/svg?seed=Admin",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
   });
 
   useEffect(() => {
@@ -29,138 +30,121 @@ const Settings = () => {
     fetchAdmin();
   }, []);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAdminData(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 pb-20">
+    <div className="h-screen overflow-y-auto bg-[#050505] text-gray-300 p-4 md:p-10 custom-scrollbar selection:bg-[#B23DEB]/30">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10">
         
-        {/* Left Side: Profile & Stats */}
-        <div className="lg:col-span-4 space-y-8">
-          
-          {/* Profile Card */}
-          <div className="bg-white/[0.02] border border-white/5 p-10 rounded-[3.5rem] text-center relative overflow-hidden group backdrop-blur-xl shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-[#B23DEB] via-transparent to-transparent opacity-10 group-hover:opacity-25 transition-all duration-1000"></div>
+        {/* Left Side */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[2.5rem] text-center backdrop-blur-3xl relative group transition-all hover:border-[#B23DEB]/20">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             
-            <div className="relative w-44 h-44 mx-auto mb-8 mt-4 group/avatar">
-              <div className="w-full h-full rounded-[3rem] bg-gradient-to-tr from-[#B23DEB] via-purple-500 to-pink-500 p-1 shadow-[0_0_50px_rgba(178,61,235,0.2)] transform group-hover/avatar:rotate-6 transition-transform duration-500">
-                <div className="w-full h-full rounded-[2.9rem] bg-[#0a0a0a] p-1.5 overflow-hidden">
-                  <img 
-                    src={adminData.image} 
-                    className="w-full h-full rounded-[2.5rem] object-cover opacity-80 group-hover/avatar:scale-110 transition-all duration-700"
-                    alt="admin-avatar"
-                  />
-                </div>
+            <div className="relative w-36 h-36 mx-auto mb-6">
+              <div className="w-full h-full rounded-[2.5rem] p-1 bg-gradient-to-tr from-[#B23DEB] to-fuchsia-500 shadow-2xl group-hover:rotate-3 transition-transform duration-500">
+                <img src={adminData.image} className="w-full h-full rounded-[2.3rem] object-cover bg-[#0a0a0a]" alt="avatar" />
               </div>
-              <label className="absolute -bottom-2 -right-2 p-4 bg-[#B23DEB] text-white rounded-2xl shadow-[0_10px_20px_rgba(178,61,235,0.4)] hover:scale-110 hover:rotate-12 transition-all cursor-pointer border-4 border-[#0a0a0a]">
-                <Camera size={22} />
-                <input type="file" className="hidden" />
+              <label className="absolute -bottom-2 -right-2 p-3 bg-[#B23DEB] text-white rounded-xl cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-lg shadow-[#B23DEB]/40">
+                <Camera size={18} />
+                <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
               </label>
             </div>
 
-            <div className="relative space-y-3">
-              <div className="flex items-center justify-center gap-3">
-                <h2 className="text-3xl font-black text-white tracking-tighter italic drop-shadow-lg">{adminData.name}</h2>
-                <Crown size={24} className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
+            <div className="relative">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <h2 className="text-2xl font-bold text-white tracking-tight">{adminData.name}</h2>
+                <Crown size={18} className="text-yellow-500" />
               </div>
-              <p className="text-[#B23DEB] font-black text-[10px] uppercase tracking-[0.4em] px-4 py-1 bg-[#B23DEB]/10 rounded-full inline-block mb-8 border border-[#B23DEB]/20">{adminData.role}</p>
-              
-              <div className="bg-white/5 border border-white/5 rounded-[2rem] p-5 flex items-center justify-between group/id hover:border-[#B23DEB]/30 transition-all duration-500">
-                <div className="flex items-center gap-3">
-                   <Fingerprint size={16} className="text-gray-600 group-hover/id:text-[#B23DEB] transition-colors" />
-                   <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Root Hash</span>
-                </div>
-                <span className="text-xs font-mono font-bold text-gray-400 group-hover/id:text-white transition-colors">777_X_ROOT</span>
-              </div>
+              <span className="text-[10px] font-black text-[#B23DEB] uppercase tracking-[0.3em] bg-[#B23DEB]/10 px-3 py-1 rounded-full border border-[#B23DEB]/20">
+                {adminData.role}
+              </span>
             </div>
           </div>
 
-          {/* System Metrics */}
-          <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[3rem] text-white backdrop-blur-md relative overflow-hidden group">
-            <div className="absolute -right-6 -bottom-6 text-white/[0.03] group-hover:text-[#B23DEB]/10 transition-colors duration-700 rotate-12">
-               <Cpu size={140} />
-            </div>
-            <h3 className="font-black mb-10 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-gray-500">
-              <Activity size={18} className="text-[#B23DEB]" /> Tizim Resurslari
+          <div className="bg-white/[0.03] border border-white/5 p-6 rounded-[2rem] space-y-6">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
+              <Activity size={14} className="text-[#B23DEB]" /> Tizim Holati
             </h3>
-            <div className="space-y-10">
-              <ProgressItem label="CPU Usage" percent="28%" color="bg-[#B23DEB]" />
-              <ProgressItem label="Firewall Security" percent="100%" color="bg-emerald-500 shadow-[0_0_15px_#10b981]" />
-            </div>
+            <ProgressItem label="Server Yuklamasi" percent="24%" color="bg-[#B23DEB]" />
+            <ProgressItem label="Xavfsizlik" percent="100%" color="bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
           </div>
         </div>
 
-        {/* Right Side: Configuration */}
-        <div className="lg:col-span-8 space-y-8">
-          
-          <div className="bg-white/[0.02] border border-white/5 p-8 md:p-14 rounded-[4rem] backdrop-blur-2xl relative overflow-hidden shadow-2xl">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
+        {/* Right Side */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="bg-white/[0.03] border border-white/5 p-8 md:p-10 rounded-[3rem] backdrop-blur-3xl shadow-2xl">
+            <div className="flex justify-between items-center mb-10">
               <div>
-                <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">
-                   System <span className="text-[#B23DEB]">Config</span>
-                </h2>
-                <p className="text-gray-500 text-sm mt-3 font-medium tracking-widest flex items-center gap-2">
-                  <ShieldCheck size={14} className="text-emerald-500"/> Xavfsiz ulanish o'rnatilgan
+                <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">
+                  System <span className="text-[#B23DEB]">Config</span>
+                </h1>
+                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                  <ShieldCheck size={12} className="text-emerald-500"/> Xavfsiz kanal orqali ulanish
                 </p>
               </div>
-              <div className="p-5 bg-gradient-to-br from-[#B23DEB] to-purple-800 text-white rounded-[2rem] shadow-[0_10px_30px_rgba(178,61,235,0.3)] animate-pulse">
-                <SettingsIcon size={32} />
+              <div className="w-12 h-12 bg-[#B23DEB]/10 rounded-2xl flex items-center justify-center text-[#B23DEB]">
+                <SettingsIcon size={24} />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
-              <AdminInput label="Admin Fullname" value={adminData.name} icon={<Zap size={18} className="text-yellow-400" />} />
-              <AdminInput label="Recovery Email" value={auth.currentUser?.email || "admin@test.uz"} icon={<Mail size={18} className="text-blue-400" />} />
-              <AdminInput label="Access Key" value="**********" type="password" icon={<Lock size={18} className="text-red-400" />} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              <AdminInput label="To'liq ism" value={adminData.name} icon={<Zap size={16} />} />
+              <AdminInput label="Email Manzil" value={auth.currentUser?.email || "admin@cloud.uz"} icon={<Mail size={16} />} />
               
-              {/* Premium Select Menu */}
-              <div className="space-y-3 group">
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] ml-4 flex items-center gap-2">
-                  <ShieldAlert size={14} className="text-[#B23DEB]" /> Authority Level
-                </label>
-                <div className="relative flex items-center">
-                  <select className="w-full bg-white/[0.03] border border-white/5 text-gray-200 px-8 py-5 rounded-[2rem] font-bold outline-none appearance-none focus:border-[#B23DEB]/50 transition-all cursor-pointer">
-                    <option className="bg-[#1a1a1a]">ROOT ACCESS</option>
-                    <option className="bg-[#1a1a1a]">MANAGER</option>
-                    <option className="bg-[#1a1a1a]">EDITOR</option>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-gray-500 uppercase ml-4 tracking-widest">Kirish Huquqi</label>
+                <div className="relative">
+                  <select className="w-full bg-white/[0.05] border border-white/5 text-sm font-bold p-4 rounded-2xl outline-none appearance-none focus:border-[#B23DEB]/40 transition-all">
+                    <option className="bg-[#111]">ROOT ACCESS</option>
+                    <option className="bg-[#111]">MODERATOR</option>
                   </select>
-                  <ChevronDown className="absolute right-6 text-gray-600 pointer-events-none" size={20} />
+                  <ChevronDown className="absolute right-4 top-4 text-gray-500 pointer-events-none" size={16} />
                 </div>
               </div>
+              <AdminInput label="Xavfsizlik Kaliti" value="********" type="password" icon={<Lock size={16} />} />
             </div>
 
-            <div className="pt-12 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-white/5">
               <ToggleCard 
-                icon={<BellRing className="text-orange-500" />} 
-                title="Global Notifications" 
-                desc="Tizimdagi barcha o'zgarishlar uchun push-xabarlar"
-                active={true}
+                icon={<BellRing size={20} />} 
+                title="Notifications" 
+                active={notifications} 
+                onClick={() => setNotifications(!notifications)}
+                color="text-orange-400"
               />
               <ToggleCard 
-                icon={<ShieldCheck className="text-[#B23DEB]" />} 
-                title="Biometric Login" 
-                desc="Kirishda FaceID yoki Fingerprint talab qilish"
-                active={false}
+                icon={<Fingerprint size={20} />} 
+                title="Biometrics" 
+                active={biometric} 
+                onClick={() => setBiometric(!biometric)}
+                color="text-cyan-400"
               />
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex flex-col sm:flex-row justify-end items-center gap-8">
-            <button className="flex items-center gap-3 text-gray-600 font-black text-xs uppercase tracking-[0.3em] hover:text-white transition-all group">
-              <RefreshCw size={16} className="group-hover:rotate-180 transition-transform duration-700" /> 
-              Reset All
+          <div className="flex flex-col sm:flex-row justify-end items-center gap-6">
+            <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-all group">
+              <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" /> Reset
             </button>
-            <button className="w-full sm:w-auto px-16 py-6 bg-[#B23DEB] text-white rounded-[2.5rem] font-black shadow-[0_20px_40px_rgba(178,61,235,0.3)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 tracking-[0.2em] text-sm uppercase group">
-              <Save size={24} className="group-hover:animate-bounce" /> 
-              Save Changes
+            <button className="w-full sm:w-auto px-10 py-4 bg-[#B23DEB] text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-[#B23DEB]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
+              <Save size={18} /> Saqlash
             </button>
           </div>
-
         </div>
       </div>
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
       `}</style>
@@ -168,54 +152,41 @@ const Settings = () => {
   );
 };
 
-// --- Custom Sub-Components ---
-
-const AdminInput = ({ label, value, type = "text", disabled = false, icon }) => (
-  <div className="space-y-3 group">
-    <label className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] ml-4 flex items-center gap-2 group-focus-within:text-[#B23DEB] transition-all">
-       {label}
-    </label>
-    <div className="relative flex items-center">
-       <div className="absolute left-7 text-gray-600 group-focus-within:text-[#B23DEB] transition-colors duration-500">
-         {icon}
-       </div>
-       <input 
-        type={type} 
-        defaultValue={value}
-        disabled={disabled}
-        className={`w-full pl-16 pr-8 py-5 rounded-[2rem] font-bold transition-all outline-none border ${
-          disabled 
-          ? "bg-white/[0.01] border-transparent text-gray-700 cursor-not-allowed" 
-          : "bg-white/[0.03] border-white/5 text-gray-200 focus:border-[#B23DEB]/50 focus:bg-white/[0.05] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
-        }`}
-      />
+const AdminInput = ({ label, value, type = "text", icon }) => (
+  <div className="space-y-2 group">
+    <label className="text-[10px] font-bold text-gray-500 uppercase ml-4 tracking-widest group-focus-within:text-[#B23DEB] transition-colors">{label}</label>
+    <div className="relative">
+      <div className="absolute left-4 top-4 text-gray-500 group-focus-within:text-[#B23DEB] transition-colors">{icon}</div>
+      <input type={type} defaultValue={value} className="w-full bg-white/[0.05] border border-white/5 pl-12 pr-4 py-4 rounded-2xl text-sm font-bold outline-none focus:border-[#B23DEB]/40 focus:bg-white/[0.08] transition-all" />
     </div>
   </div>
 );
 
 const ProgressItem = ({ label, percent, color }) => (
-  <div className="space-y-4">
-    <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-gray-600">
-      <span className="flex items-center gap-2"><Cpu size={12}/> {label}</span>
-      <span className="text-white bg-white/5 px-2 py-0.5 rounded">{percent}</span>
+  <div className="space-y-2">
+    <div className="flex justify-between text-[9px] font-bold uppercase tracking-tighter text-gray-500">
+      <span>{label}</span>
+      <span className="text-white">{percent}</span>
     </div>
-    <div className="h-3 w-full bg-black/50 rounded-full overflow-hidden p-1 border border-white/5">
-      <div className={`h-full ${color} rounded-full transition-all duration-[2s] ease-out`} style={{ width: percent }}></div>
+    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+      <div className={`h-full ${color} transition-all duration-1000`} style={{ width: percent }}></div>
     </div>
   </div>
 );
 
-const ToggleCard = ({ icon, title, desc, active }) => (
-  <div className="flex items-center justify-between p-7 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-[#B23DEB]/40 hover:bg-[#B23DEB]/5 transition-all duration-500 cursor-pointer group">
-    <div className="flex items-center gap-6">
-      <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 group-hover:scale-110 transition-transform duration-500">{icon}</div>
-      <div>
-        <h4 className="font-black text-gray-200 text-sm mb-1 uppercase tracking-tight">{title}</h4>
-        <p className="text-[10px] text-gray-600 font-bold leading-tight group-hover:text-gray-400 transition-colors uppercase">{desc}</p>
-      </div>
+const ToggleCard = ({ icon, title, active, onClick, color }) => (
+  <div 
+    onClick={onClick}
+    className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+      active ? 'bg-[#B23DEB]/5 border-[#B23DEB]/30' : 'bg-white/[0.02] border-white/5'
+    }`}
+  >
+    <div className="flex items-center gap-4">
+      <div className={`${active ? color : 'text-gray-500'} transition-colors`}>{icon}</div>
+      <span className="text-xs font-bold uppercase tracking-wide text-gray-300">{title}</span>
     </div>
-    <div className={`w-14 h-8 rounded-full flex items-center px-1.5 transition-all duration-500 ${active ? 'bg-[#B23DEB] shadow-[0_0_15px_#B23DEB]' : 'bg-white/10'}`}>
-      <div className={`w-5 h-5 bg-white rounded-full shadow-2xl transition-all duration-500 ${active ? 'translate-x-6' : 'translate-x-0'}`}></div>
+    <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${active ? 'bg-[#B23DEB]' : 'bg-white/10'}`}>
+      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${active ? 'left-6' : 'left-1'}`} />
     </div>
   </div>
 );
