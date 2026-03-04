@@ -122,7 +122,7 @@ const Dashboard = () => {
 
         <div className="bg-white p-8 rounded-sm shadow-xl shadow-slate-200/50 border border-white flex flex-col items-center">
           <h2 className="text-xl font-bold mb-6 self-start tracking-tight">
-            Faollik
+            Activity
           </h2>
           <style>{`
             .react-calendar { border: none !important; width: 100% !important; font-family: inherit; }
@@ -136,7 +136,7 @@ const Dashboard = () => {
       </div>
 
       <h2 className="text-2xl font-black mt-16 mb-8 text-slate-800 tracking-tight">
-        So'nggi urinishlar
+        Recent attempts
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {results.map((res) => (
@@ -173,7 +173,7 @@ const Dashboard = () => {
                 <span
                   className={`text-[10px] font-bold ${res.score >= 70 ? "text-emerald-500" : "text-amber-500"}`}
                 >
-                  {res.score >= 70 ? "MUVAFFAQIYATLI" : "YAXSHIROQ O'QI"}
+                  {res.score >= 70 ? "SUCCESSFUL" : "READ BETTER"}
                 </span>
               </div>
               <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
@@ -198,7 +198,7 @@ const StatCard = ({ title, value, icon }) => (
   <div className="bg-white/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-4 rounded-sm flex items-center gap-3">
     <span className="text-2xl">{icon}</span>
     <div>
-      <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">
+      <p className="text-[10px] md:text-xs  text-slate-400 uppercase tracking-wider">
         {title}
       </p>
       <h3 className="text-sm md:text-lg font-black text-slate-900 leading-tight">

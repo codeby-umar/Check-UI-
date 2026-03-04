@@ -12,6 +12,8 @@ import { MdMarkUnreadChatAlt } from "react-icons/md";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { AiFillCode } from "react-icons/ai";
+
 
 
 function Navbar() {
@@ -101,7 +103,7 @@ function Navbar() {
             Chat UI
           </NavLink>
           <NavLink
-            to={"/"}
+            to={"/code"}
             className={({ isActive }) =>
               `flex items-center mb-7 gap-6 transition-all ${
                 isActive ? "text-[#B23DEB]" : " hover:text-[#B23DEB]"
@@ -109,7 +111,7 @@ function Navbar() {
             }
           >
             {" "}
-            <MdDarkMode size={"28px"} /> Dark mode
+            < AiFillCode  size={"28px"} /> Coders
           </NavLink>
         </ul>
         <div>

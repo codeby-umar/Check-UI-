@@ -1,7 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 import Login from "./Auth/Login";
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
@@ -17,6 +16,7 @@ import Course from "./pages/Courses";
 import Settings from "./pages/Settings";
 import Chatui from "./pages/Chatui";
 import QuizPage from "./pages/QuizPage";
+import Coders from "./pages/Coders";
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -60,6 +60,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Layouts><Chatui /></Layouts>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/code"
+        element={
+          <ProtectedRoute>
+            <Layouts><Coders/></Layouts>
           </ProtectedRoute>
         }
       />

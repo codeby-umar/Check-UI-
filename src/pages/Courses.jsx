@@ -18,7 +18,7 @@ const Courses = () => {
   }, []);
 
 
-  const categories = ["Hammasi", "Matematika", "Ingliz tili", "Dasturlash", "Fizika"];
+  const categories = ["All", "Math", "English", "programming", "Physics"];
 
   const filteredCourses = courses.filter(course => {
     const matchesFilter = filter === "Hammasi" || course.category === filter;
@@ -31,8 +31,8 @@ const Courses = () => {
       <div className="max-w-7xl mx-auto mb-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Kurslarimiz</h1>
-            <p className="text-slate-500 mt-2">Bilimingizni oshirish uchun eng yaxshi kontentlar</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Our courses</h1>
+            <p className="text-slate-500 mt-2">The best content to increase your knowledge</p>
           </div>
 
           <div className="relative w-full md:w-96">
@@ -40,21 +40,20 @@ const Courses = () => {
             <input
               type="text"
               placeholder="Kurs qidirish..."
-              className="w-full pl-12 pr-4 py-4 bg-white border-none rounded-[20px] shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              className="w-full pl-12 pr-4 py-4 border-none rounded-xl border-[0.5px] border-black focus:ring-2 ring-indigo-500 outline-none transition-all"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        {/* 2. Filtrlar */}
         <div className="flex gap-3 mt-8 overflow-x-auto pb-2 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap ${
+              className={`px-6 py-2.5 rounded-sm  text-sm transition-all whitespace-nowrap ${
                 filter === cat 
-                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" 
+                ? "bg-[#B23DEB] text-white shadow-lg shadow-indigo-200" 
                 : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-100"
               }`}
             >
@@ -64,14 +63,12 @@ const Courses = () => {
         </div>
       </div>
 
-      {/* 3. Kurslar Grid */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredCourses.map((course) => (
           <div 
             key={course.id} 
-            className="group bg-white rounded-[35px] overflow-hidden border border-slate-100 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 flex flex-col"
+            className="group bg-white rounded-sm overflow-hidden border border-slate-100 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 flex flex-col"
           >
-            {/* Kurs rasmi */}
             <div className="relative h-52 overflow-hidden">
               <img 
                 src={course.image || "https://via.placeholder.com/400x250"} 
@@ -79,7 +76,7 @@ const Courses = () => {
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute top-4 left-4">
-                <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-600">
+                <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-sm text-[10px] font-black uppercase tracking-widest text-indigo-600">
                   {course.level || "Boshlang'ich"}
                 </span>
               </div>
@@ -88,7 +85,6 @@ const Courses = () => {
               </div>
             </div>
 
-            {/* Kurs ma'lumoti */}
             <div className="p-8 flex flex-col flex-1">
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center text-amber-500 gap-1">
@@ -123,11 +119,10 @@ const Courses = () => {
         ))}
       </div>
 
-      {/* Bo'sh holat */}
       {filteredCourses.length === 0 && (
         <div className="text-center py-20">
-          <div className="bg-white inline-block p-10 rounded-[40px] shadow-sm border border-dashed border-slate-200">
-            <p className="text-slate-400 font-bold text-lg">Bu ruknda kurslar topilmadi.</p>
+          <div className="inline-block p-10   border-slate-200">
+            <p className="text-slate-400 font-bold text-lg">No courses found in this column...</p>
           </div>
         </div>
       )}
