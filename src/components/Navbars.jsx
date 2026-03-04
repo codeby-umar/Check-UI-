@@ -1,91 +1,96 @@
-import { CiSearch } from "react-icons/ci";
 import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import ButtonBase from "@mui/material/ButtonBase";
-import gr from "../assets/gr.svg";
 import { useAuth } from "../context/AuthContext";
+import { FiBell, FiEdit2, FiSearch } from "react-icons/fi"; 
 
 function Navbars() {
   const { user } = useAuth();
-  const [avatarSrc, setAvatarSrc] = React.useState(undefined);
+  // Rasmni xotiradan olish
+  const [avatarSrc, setAvatarSrc] = React.useState(localStorage.getItem("user_avatar") || undefined);
+  
   const userName = user?.displayName || user?.email?.split("@")[0] || "Mehmon";
+  const firstLetter = userName.charAt(0).toUpperCase();
 
   const handleAvatarChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => setAvatarSrc(reader.result);
+      reader.onload = () => {
+        const base64Image = reader.result;
+        setAvatarSrc(base64Image);
+        localStorage.setItem("user_avatar", base64Image); // Saqlash qismi
+      };
       reader.readAsDataURL(file);
     }
   };
 
   return (
-    <div className="flex  items-center justify-between p-8 w-full px-12">
-      <div className="min-w-0">
-        <h1 className="text-[42px] font-semibold text-slate-900">
-          Welcome{" "}
-          <span className="text-[#B23DEB] capitalize">{userName}!</span>
+    <div className="w-full flex items-center border-b justify-between p-8 bg-[#0a0a0a]">
+      
+      {/* Chap tomon: Matnlar */}
+      <div className="flex flex-col">
+        <h1 className="text-4xl font-bold text-white tracking-tight">
+          Welcome, <span className="text-[#B23DEB] capitalize">{userName}!</span>
         </h1>
-        <p className="m-2 text-lg text-slate-500">
+        <p className="text-gray-500 text-lg mt-1 font-medium">
           Here is your Profile Dashboard
         </p>
       </div>
-      <div className="flex items-center gap-9 shrink-0">
-        <div className="relative">
+
+      {/* O'ng tomon: Qidiruv va Profil */}
+      <div className="flex items-center gap-8">
+        
+        {/* Search Input */}
+        <div className="relative group hidden lg:block">
           <input
             type="text"
             placeholder="Search..."
-            className="h-14 w-80  rounded-xl border border-slate-200 px-4 pr-10 text-sm outline-none transition focus:border-[#B23DEB] focus:ring-2 focus:ring-[#B23DEB]/30"
+            className="h-14 w-80 rounded-2xl bg-white/5 border border-white/10 px-6 pr-12 text-white outline-none focus:border-[#B23DEB] transition-all"
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-            <CiSearch size={"26px"} />
-          </span>
+          <FiSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500" size="22" />
         </div>
-        <div>
-          <img src={gr} alt="massage" />
+
+        {/* Notification Icon */}
+        <div className="p-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-[#B23DEB] cursor-pointer transition-all">
+          <FiBell size="24" />
         </div>
+
+        {/* User Avatar & Upload */}
         <div className="group relative">
           <ButtonBase
             component="label"
-            role={undefined}
-            tabIndex={-1}
-            aria-label="Avatar image"
             sx={{
-              height: "50px",
-              borderRadius: "40px",
-              "&:has(:focus-visible)": {
-                outline: "2px solid",
-                outlineOffset: "2px",
-                border: "solid 1px",
-              },
+              borderRadius: "50%",
+              padding: "2px",
+              border: "2px solid #B23DEB",
+              transition: "0.3s",
+              "&:hover": { boxShadow: "0 0 15px rgba(178, 61, 235, 0.5)" }
             }}
           >
-            <div className="relative">
-              <div className="rounded-full ring-2 ring-[#B23DEB]/60 shadow-[0_10px_25px_rgba(178,61,235,0.22)] transition group-hover:ring-[#B23DEB]">
-                <Avatar
-                  alt="Upload new avatar"
-                  src={avatarSrc}
-                  sx={{ width: 50, height: 50 }}
-                />
-              </div>
-              <div className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-white text-[10px] shadow-sm ring-2 ring-[#B23DEB]/30 group-hover:ring-[#B23DEB]/60">
-                ✎
-              </div>
+            <Avatar
+              alt={userName}
+              src={avatarSrc}
+              sx={{ 
+                width: 55, 
+                height: 55, 
+                background: !avatarSrc ? "#B23DEB" : "transparent",
+                fontWeight: "bold",
+                fontSize: "1.5rem"
+              }}
+            >
+              {firstLetter}
+            </Avatar>
+            
+            {/* Edit Icon */}
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#B23DEB] rounded-full flex items-center justify-center text-white border-2 border-[#0a0a0a]">
+              <FiEdit2 size="12" />
             </div>
 
             <input
               type="file"
               accept="image/*"
-              style={{
-                clip: "rect(0 0 0 0)",
-                height: "1px",
-                margin: "-1px",
-                overflow: "hidden",
-                padding: 0,
-                position: "absolute",
-                whiteSpace: "nowrap",
-                width: "1px",
-              }}
+              hidden
               onChange={handleAvatarChange}
             />
           </ButtonBase>

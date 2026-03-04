@@ -3,9 +3,8 @@ import Navbars from "../components/Navbars";
 
 function Layouts({ children }) {
   return (
-    <div className="h-screen gap-4 flex">
+    <div className="h-screen  flex">
       <Navbar />
-      <div className="h-screen border-[0.5px] border-gray-300"></div>
       <div className="w-full">
         <Navbars />
         <div>{children}</div>
