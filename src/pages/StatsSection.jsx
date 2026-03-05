@@ -3,12 +3,14 @@ import { db } from '../firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { motion, animate } from 'framer-motion';
 
-t
+// BU YERDAGI "t" HARFI OLIB TASHLANDI
+
 const Counter = ({ value, suffix = "+" }) => {
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
-    if (typeof value === 'string') {
+    // Agar qiymat son bo'lmasa (masalan "24/7"), animatsiya qilmasdan o'zini ko'rsatadi
+    if (typeof value !== 'number') {
       setDisplayValue(value);
       return;
     }
@@ -32,11 +34,13 @@ const StatsSection = () => {
   });
 
   useEffect(() => {
+    // Firebase-dan foydalanuvchilar sonini real-vaqtda olish
     const qUsers = query(collection(db, "users")); 
     const unsubUsers = onSnapshot(qUsers, (snapshot) => {
       setCounts(prev => ({ ...prev, users: snapshot.size }));
     });
 
+    // Firebase-dan testlar sonini real-vaqtda olish
     const qTests = query(collection(db, "tests")); 
     const unsubTests = onSnapshot(qTests, (snapshot) => {
       setCounts(prev => ({ ...prev, tests: snapshot.size }));
