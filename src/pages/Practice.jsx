@@ -10,15 +10,12 @@ const Practice = () => {
   ];
 
   return (
-    <div className="min-h-screen py-20 px-6 relative overflow-hidden bg-[#0a0a0a] text-white">
+    <div className="min-h-screen py-25 px-6 relative overflow-hidden bg-[#0a0a0a] text-white">
       <div className="absolute top-[-10%] left-[-10%] w-125 h-125 bg-[#B23DEB]/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[0%] right-[-5%] w-100 h-100 bg-[#B23DEB]/5 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-24">
-          <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium tracking-wider text-[#B23DEB] uppercase bg-[#B23DEB]/10 rounded-full border border-[#B23DEB]/20">
-            O'z ustingda ishla
-          </span>
           <h2 className="text-5xl md:text-7xl font-extrabold mb-8 tracking-tighter leading-tight">
             Level Up Your <br />
             <span className="bg-gradient-to-r from-[#B23DEB] via-[#d484f5] to-[#B23DEB] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(178,61,235,0.3)]">
@@ -36,7 +33,7 @@ const Practice = () => {
               key={index} 
               className="group relative p-0.5 rounded-sm  bg-gradient-to-b from-white/10 to-transparent hover:from-[#B23DEB]/50 transition-all duration-500 shadow-2xl"
             >
-              {/* Kartochka ichki qismi */}
+             
               <div className="relative h-full bg-[#111] rounded-lg p-8 overflow-hidden flex flex-col">
                 
                 {/* Hover gradient effekti */}

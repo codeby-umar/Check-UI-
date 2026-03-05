@@ -16,7 +16,6 @@ const LivingChat = () => {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    // try-catch qo'shildi xatoni ko'rish uchun
     try {
       const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
       
@@ -27,7 +26,6 @@ const LivingChat = () => {
         }));
         setChatHistory(msgs);
       }, (error) => {
-        // AGAR SHU YERDA XATO CHIQSA, KONSOOLDA KO'RASAN
         console.error("FIREBASE ERROR:", error.message);
       });
 
@@ -50,7 +48,6 @@ const LivingChat = () => {
     try {
       const currentUser = auth.currentUser;
       
-      // Xabar yuborishdan oldin obyektni tayyorlab olamiz
       const newMessage = {
         text: message.trim(),
         uid: currentUser?.uid || 'guest_' + Math.random().toString(36).substr(2, 9),
@@ -59,7 +56,7 @@ const LivingChat = () => {
         createdAt: serverTimestamp(),
       };
 
-      setMessage(''); // Inputni srazu tozalash
+      setMessage(''); 
       await addDoc(collection(db, "messages"), newMessage);
     } catch (error) {
       console.error("YUBORISHDA XATO:", error);
@@ -68,7 +65,7 @@ const LivingChat = () => {
   };
 
   return (
-    <div className="flex h-150 flex-col bg-[#0A0A0A] border border-white/10 overflow-hidden shadow-2xl">
+    <div className="flex h-full flex-col bg-[#0A0A0A] border border-white/10 overflow-hidden">
       <div className="p-5 border-b border-white/5 bg-white/2">
         <h3 className="text-white font-bold flex items-center gap-2">
           <span className="w-2 h-2 bg-[#B23DEB] rounded-full animate-pulse shadow-[0_0_10px_#B23DEB]"></span>

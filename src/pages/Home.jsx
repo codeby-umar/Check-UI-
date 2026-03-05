@@ -1,6 +1,7 @@
 import art from "../assets/art.svg";
 import { Link } from "react-router-dom";
-import { FiCode, FiCpu, FiGlobe, FiLayout } from "react-icons/fi"; // Ikonkalar uchun
+import { FiCode, FiCpu, FiGlobe, FiLayout } from "react-icons/fi";
+import StatsSection from "./StatsSection";
 
 function Home() {
   const features = [
@@ -69,38 +70,50 @@ function Home() {
           </div>
         </div>
       </section>
-      <section className="py-20 border-y border-white/5 bg-white/2">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[["34+", "Users"], ["3+", "Lessons"], ["98%", "Success"], ["24/7", "Support"]].map(([val, label]) => (
-              <div key={label} className="group">
-                <h4 className="text-4xl md:text-5xl font-black text-white group-hover:text-[#B23DEB] transition-colors">{val}</h4>
-                <p className="text-gray-500 uppercase tracking-widest text-xs mt-2">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className=" p-30 relative">
-        <div className="container mx-auto px-6 p-4 text-center">
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-9">Nega aynan <span className="text-[#B23DEB]">Check UI?</span></h2>
-          <p className="text-gray-400 max-w-2xl mx-auto text-lg">Platformamiz sizga eng qisqa vaqt ichida natijaga erishishingiz uchun barcha asboblarni taqdim etadi.</p>
+     <StatsSection/>
+
+     <section className="relative py-20 overflow-hidden bg-[#0a0a0a] text-white">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#B23DEB]/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-[#B23DEB]/5 blur-[100px] rounded-full"></div>
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Sarlavha qismi */}
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+            Nega aynan <span className="bg-gradient-to-r from-[#B23DEB] to-[#7e22ce] bg-clip-text text-transparent">Check UI?</span>
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
+            Platformamiz sizga eng qisqa vaqt ichida natijaga erishishingiz uchun barcha zamonaviy asboblarni taqdim etadi.
+          </p>
         </div>
 
-        <div className="container mx-auto px-3 md:px-6  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Kartochkalar Grid tizimi */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((f, i) => (
-            <div key={i} className="p-8 rounded-lg bg-white/5 border border-white/10 hover:border-[#B23DEB]/50 transition-all duration-500 group">
-              <div className="w-14 h-14 rounded-2xl bg-[#B23DEB]/10 flex items-center justify-center text-[#B23DEB] mb-6 group-hover:scale-110 transition-transform">
-                {f.icon}
+            <div 
+              key={i} 
+              className="group relative p-8 rounded-3xl bg-white/[0.03] border border-white/10 hover:border-[#B23DEB]/40 transition-all duration-500 hover:-translate-y-2"
+            >
+              {/* Kartochka ichidagi maxsus gradient (Hoverda ko'rinadi) */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
+
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-[#B23DEB]/15 flex items-center justify-center text-[#B23DEB] mb-6 group-hover:bg-[#B23DEB] group-hover:text-white transition-all duration-500 shadow-lg shadow-[#B23DEB]/10">
+                  {f.icon}
+                </div>
+                <h3 className="text-xl font-bold mb-3 group-hover:text-white transition-colors">{f.title}</h3>
+                <p className="text-gray-500 leading-relaxed group-hover:text-gray-300 transition-colors text-sm md:text-base">
+                  {f.desc}
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-4">{f.title}</h3>
-              <p className="text-gray-500 leading-relaxed group-hover:text-gray-300 transition-colors">{f.desc}</p>
             </div>
           ))}
         </div>
-      </section>
-
+      </div>
+    </section>
       
 
     </div>

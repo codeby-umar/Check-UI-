@@ -9,7 +9,7 @@ const Explore = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white py-24 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] text-white py-36 px-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-125 h-125 bg-[#B23DEB]/5 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-100 h-100 bg-blue-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -51,14 +51,12 @@ const Explore = () => {
               key={idx} 
               className="group bg-[#111] rounded-sm border border-white/5 overflow-hidden hover:border-[#B23DEB]/40 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(178,61,235,0.1)] flex flex-col"
             >
-              {/* Card Preview Area */}
               <div className="h-56 w-full relative overflow-hidden bg-[#050505]">
                 <div 
                   className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700"
                   style={{ background: `radial-gradient(circle at center, ${item.color}, transparent)` }}
                 ></div>
                 
-                {/* Abstract Design Elements */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                    <div 
                     className="w-32 h-32 rounded-full blur-[60px] animate-pulse" 
