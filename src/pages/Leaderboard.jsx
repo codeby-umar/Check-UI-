@@ -43,9 +43,9 @@ const Leaderboard = () => {
     <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-8 md:p-12 custom-scrollbar">
       
       {/* 1. Header Card */}
-      <div className="bg-gradient-to-br from-[#B23DEB] via-[#8a2eb8] to-[#6a1b9a] rounded-[3rem] p-10 text-white shadow-[0_20px_50px_rgba(178,61,235,0.3)] mb-16 relative overflow-hidden group">
+      <div className="bg-gradient-to-br from-[#B23DEB] via-[#8a2eb8] to-[#6a1b9a] p-10 text-white shadow-[0_20px_50px_rgba(178,61,235,0.3)] mb-16 relative overflow-hidden group">
         <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="bg-white/20 p-4 rounded-full backdrop-blur-md mb-6 animate-bounce">
+          <div className="bg-white/20 p-4 rounded-full backdrop-blur-md mb-6 ">
             <Trophy className="text-yellow-400" size={50} />
           </div>
           <h1 className="text-5xl font-black tracking-tighter uppercase italic">Hall of <span className="text-yellow-300">Fame</span></h1>
