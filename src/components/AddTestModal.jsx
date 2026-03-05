@@ -40,15 +40,11 @@ const AddTestModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0a]/80 backdrop-blur-md flex items-center justify-center z-[200] p-6 overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 bg-[#0a0a0a]/80 backdrop-blur-md flex items-center justify-center z-200 p-6 overflow-y-auto custom-scrollbar">
       
-      {/* Modal Container */}
       <div className="bg-[#111111] w-full max-w-lg rounded-[3.5rem] p-8 md:p-12 relative border border-white/5 shadow-[0_0_100px_rgba(178,61,235,0.15)] animate-in fade-in zoom-in duration-500">
-        
-        {/* Glow Effect */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#B23DEB] blur-[100px] opacity-20 pointer-events-none"></div>
+                <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#B23DEB] blur-[100px] opacity-20 pointer-events-none"></div>
 
-        {/* Close Button */}
         <button 
           onClick={onClose} 
           className="absolute top-8 right-8 text-gray-500 hover:text-[#B23DEB] hover:rotate-90 transition-all duration-300"
@@ -56,9 +52,8 @@ const AddTestModal = ({ isOpen, onClose }) => {
           <IoClose size={32} />
         </button>
 
-        {/* Header */}
         <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-[#B23DEB]/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-[#B23DEB]/20">
+          <div className="w-20 h-20 bg-[#B23DEB]/10 rounded-4xl flex items-center justify-center mx-auto mb-6 border border-[#B23DEB]/20">
             <IoCloudUpload size={35} className="text-[#B23DEB] animate-bounce" />
           </div>
           <h2 className="text-4xl font-black text-white tracking-tighter uppercase italic">
@@ -69,7 +64,6 @@ const AddTestModal = ({ isOpen, onClose }) => {
         
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           
-          {/* Image URL Input */}
           <div className="space-y-3 group">
             <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-4 flex items-center gap-2 group-focus-within:text-[#B23DEB] transition-colors">
               <IoLinkOutline size={14}/> Cover Image URL
