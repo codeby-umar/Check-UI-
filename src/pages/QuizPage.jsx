@@ -4,6 +4,16 @@ import { db, auth } from "../firebase";
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { Timer, HelpCircle, ChevronRight, Trophy, LayoutDashboard, BrainCircuit, Rocket } from "lucide-react";
 
+// Variantlarni tasodifiy aralashtirish uchun yordamchi funksiya
+const shuffleArray = (array) => {
+  let shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const QuizPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,6 +29,15 @@ const QuizPage = () => {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
+        
+        // Har bir savolning variantlarini aralashtirish
+        if (data.questions) {
+          data.questions = data.questions.map(question => ({
+            ...question,
+            options: shuffleArray(question.options)
+          }));
+        }
+
         setTest(data);
         setTimeLeft(data.timeLimit * 60); 
       }
@@ -55,7 +74,7 @@ const QuizPage = () => {
 
     try {
       await addDoc(collection(db, "results"), {
-        userId: auth.currentUser.uid,
+        userId: auth.currentUser?.uid || "anonymous",
         testTitle: test.title,
         score: percent,
         correctAnswers: finalScore,
