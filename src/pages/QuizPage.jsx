@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../firebase";
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
-import { Timer, HelpCircle, ChevronRight, Trophy, LayoutDashboard, BrainCircuit, Rocket } from "lucide-react";
+import { Timer, HelpCircle, ChevronRight, LayoutDashboard, BrainCircuit, Rocket } from "lucide-react";
 
-// Variantlarni tasodifiy aralashtirish uchun yordamchi funksiya
 const shuffleArray = (array) => {
   let shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -23,21 +22,53 @@ const QuizPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
+  // --- XAVFSIZLIK FUNKSIYALARI ---
+  useEffect(() => {
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleKeyDown = (e) => {
+      // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+C kabi kombinatsiyalarni bloklash
+      if (
+        e.keyCode === 123 || 
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
+        (e.ctrlKey && e.keyCode === 85) || 
+        (e.ctrlKey && e.keyCode === 67) || 
+        (e.key === 'PrintScreen')
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    };
+    
+    // Clipboardni tozalashga urinish (screenshotni qiyinlashtirish uchun)
+    const handleCopy = (e) => {
+      e.preventDefault();
+      alert("Nusxa olish taqiqlangan!");
+    };
+
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("copy", handleCopy);
+
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("copy", handleCopy);
+    };
+  }, []);
+  // -------------------------------
+
   useEffect(() => {
     const fetchTestData = async () => {
       const docRef = doc(db, "tests", id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        
-        // Har bir savolning variantlarini aralashtirish
         if (data.questions) {
           data.questions = data.questions.map(question => ({
             ...question,
             options: shuffleArray(question.options)
           }));
         }
-
         setTest(data);
         setTimeLeft(data.timeLimit * 60); 
       }
@@ -70,7 +101,7 @@ const QuizPage = () => {
 
   const finishQuiz = async (finalScore = score) => {
     setIsFinished(true);
-    const percent = Math.round((finalScore / test.questions.length) * 100);
+    const percent = Math.round((finalScore / (test?.questions?.length || 1)) * 100);
 
     try {
       await addDoc(collection(db, "results"), {
@@ -94,7 +125,8 @@ const QuizPage = () => {
   );
 
   return (
-    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar flex flex-col items-center">
+    // select-none classi matnni belgilashni butunlay yopadi
+    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar flex flex-col items-center select-none">
       
       {!isFinished ? (
         <div className="w-full max-w-4xl animate-fade-in">
@@ -155,8 +187,6 @@ const QuizPage = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/10 to-transparent opacity-50"></div>
             
             <div className="relative z-10">
-          
-              
               <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Natija Yakunlandi!</h2>
               <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-10">Sizning umumiy natijangiz</p>
 
@@ -201,13 +231,20 @@ const QuizPage = () => {
         </div>
       )}
 
-      {/* Styles */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
         
+        /* Matnni belgilashni o'chirish */
+        .select-none {
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
