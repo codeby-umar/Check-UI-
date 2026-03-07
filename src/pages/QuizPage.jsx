@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../firebase";
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
-import { Timer, HelpCircle, ChevronRight, LayoutDashboard, BrainCircuit, Rocket } from "lucide-react";
+import { Timer, HelpCircle, ChevronRight, LayoutDashboard, BrainCircuit, Rocket, AlertTriangle } from "lucide-react";
 
 const shuffleArray = (array) => {
   let shuffled = [...array];
@@ -21,42 +21,78 @@ const QuizPage = () => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [warningCount, setWarningCount] = useState(0);
 
-  // --- XAVFSIZLIK FUNKSIYALARI ---
+  // Score va holatni o'z vaqtida ushlab qolish uchun Ref'lar
+  const scoreRef = useRef(0);
+  const isFinishedRef = useRef(false);
+
+  // Score o'zgarganda Refni yangilaymiz
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+
+  // --- QAT'IY XAVFSIZLIK LOGIKASI ---
   useEffect(() => {
     const handleContextMenu = (e) => e.preventDefault();
+    
+    const handleActionViolation = () => {
+      setWarningCount((prev) => {
+        const newCount = prev + 1;
+        if (newCount >= 2) {
+          // 2-urinishda darhol tugatish
+          finishQuiz(scoreRef.current);
+          alert("Xavfsizlik qoidalari buzilgani sababli test yakunlandi!");
+        } else {
+          alert("DIQQAT: Skrinshot olish yoki sahifadan chiqish taqiqlangan! Yana bir urinishda test bekor qilinadi.");
+        }
+        return newCount;
+      });
+    };
+
     const handleKeyDown = (e) => {
-      // F12, Ctrl+Shift+I, Ctrl+U, Ctrl+C kabi kombinatsiyalarni bloklash
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      
+      // PrintScreen va skrinshot hotkeylari
       if (
-        e.keyCode === 123 || 
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
-        (e.ctrlKey && e.keyCode === 85) || 
-        (e.ctrlKey && e.keyCode === 67) || 
-        (e.key === 'PrintScreen')
+        e.key === 'PrintScreen' || e.keyCode === 44 || e.keyCode === 123 ||
+        (e.ctrlKey && (e.keyCode === 80 || e.keyCode === 83 || e.keyCode === 85)) || // P, S, U
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // I, J, C
+        (isMac && e.metaKey && e.shiftKey && (e.keyCode === 51 || e.keyCode === 52 || e.keyCode === 53)) // Cmd+Shift+3/4/5
       ) {
         e.preventDefault();
-        return false;
+        handleActionViolation();
       }
     };
-    
-    // Clipboardni tozalashga urinish (screenshotni qiyinlashtirish uchun)
-    const handleCopy = (e) => {
-      e.preventDefault();
-      alert("Nusxa olish taqiqlangan!");
+
+    // Snipping Tool ochilganda yoki boshqa ilovaga o'tilganda (Focus yo'qolganda)
+    const handleBlur = () => {
+      // Blur bo'lganda darhol jazolash
+      if (!isFinishedRef.current) {
+        handleActionViolation();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isFinishedRef.current) {
+        handleActionViolation();
+      }
     };
 
     window.addEventListener("contextmenu", handleContextMenu);
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("copy", handleCopy);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("copy", handleCopy);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
-  // -------------------------------
+  }, [test]); 
 
+  // --- TEST MA'LUMOTLARINI OLISh ---
   useEffect(() => {
     const fetchTestData = async () => {
       const docRef = doc(db, "tests", id);
@@ -76,6 +112,7 @@ const QuizPage = () => {
     fetchTestData();
   }, [id]);
 
+  // --- TIMER ---
   useEffect(() => {
     if (timeLeft > 0 && !isFinished) {
       const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
@@ -99,18 +136,24 @@ const QuizPage = () => {
     }
   };
 
-  const finishQuiz = async (finalScore = score) => {
+  const finishQuiz = async (finalScore = scoreRef.current) => {
+    if (isFinishedRef.current) return;
+    isFinishedRef.current = true;
     setIsFinished(true);
-    const percent = Math.round((finalScore / (test?.questions?.length || 1)) * 100);
+
+    const totalQuestions = test?.questions?.length || 1;
+    const percent = Math.round((finalScore / totalQuestions) * 100);
 
     try {
       await addDoc(collection(db, "results"), {
         userId: auth.currentUser?.uid || "anonymous",
-        testTitle: test.title,
+        testTitle: test?.title || "Noma'lum Test",
         score: percent,
         correctAnswers: finalScore,
-        totalQuestions: test.questions.length,
-        date: new Date()
+        totalQuestions: test?.questions?.length || 0,
+        date: new Date(),
+        violations: warningCount + 1,
+        status: warningCount >= 1 ? "Terminated" : "Completed"
       });
     } catch (e) {
       console.error("Xatolik natijani saqlashda: ", e);
@@ -125,11 +168,17 @@ const QuizPage = () => {
   );
 
   return (
-    // select-none classi matnni belgilashni butunlay yopadi
-    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar flex flex-col items-center select-none">
+    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-12 custom-scrollbar flex flex-col items-center select-none no-print">
       
       {!isFinished ? (
         <div className="w-full max-w-4xl animate-fade-in">
+          
+          {warningCount > 0 && (
+            <div className="mb-6 p-4 bg-red-600/20 border border-red-500 text-red-500 text-center rounded-sm font-black text-sm uppercase flex items-center justify-center gap-3 animate-pulse">
+              <AlertTriangle size={20} /> Ogohlantirish: {warningCount} / 2 - Test yakunlanishi mumkin!
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 bg-white/2 border border-white/5 p-6 rounded-sm backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-[#B23DEB]/10 rounded-2xl flex items-center justify-center border border-[#B23DEB]/20">
@@ -175,27 +224,23 @@ const QuizPage = () => {
               ))}
             </div>
           </div>
-          
-          <p className="text-center text-gray-600 text-[10px] mt-8 uppercase font-black tracking-[0.5em]">
-            Imtihon uchun maxsus Codebyumar
-          </p>
-
         </div>
       ) : (
+        /* NATIJA QISMI */
         <div className="w-full max-w-xl animate-scale-up mt-10">
           <div className="bg-white/2 border border-white/5 p-12 rounded-sm backdrop-blur-3xl text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/10 to-transparent opacity-50"></div>
-            
             <div className="relative z-10">
-              <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Natija Yakunlandi!</h2>
-              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-10">Sizning umumiy natijangiz</p>
+              <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">
+                {warningCount >= 2 ? "Test To'xtatildi!" : "Natija Yakunlandi!"}
+              </h2>
+              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-10">
+                {warningCount >= 2 ? "Xavfsizlik qoidasi buzildi" : "Sizning natijangiz"}
+              </p>
 
               <div className="relative inline-block mb-12">
                  <div className="text-8xl font-black text-white drop-shadow-[0_0_30px_rgba(178,61,235,0.5)]">
-                   {Math.round((score / test.questions.length) * 100)}<span className="text-[#B23DEB] text-4xl">%</span>
-                 </div>
-                 <div className="absolute -right-8 -top-4 bg-emerald-500 text-[#0a0a0a] text-[10px] font-black px-3 py-1 rounded-full uppercase">
-                   Passed
+                   {Math.round((score / (test?.questions?.length || 1)) * 100)}<span className="text-[#B23DEB] text-4xl">%</span>
                  </div>
               </div>
 
@@ -206,53 +251,31 @@ const QuizPage = () => {
                  </div>
                  <div className="bg-white/5 p-4 rounded-sm border border-white/5">
                     <p className="text-gray-500 text-[10px] font-black uppercase mb-1">Xato</p>
-                    <p className="text-2xl font-black text-red-500">{test.questions.length - score}</p>
+                    <p className="text-2xl font-black text-red-500">{test?.questions?.length - score}</p>
                  </div>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <button 
-                  onClick={() => navigate("/dashboard")}
-                  className="flex items-center justify-center gap-3 w-full py-6 bg-[#B23DEB] text-white rounded-sm font-black shadow-[0_20px_40px_rgba(178,61,235,0.3)] hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-sm group"
-                >
-                  <LayoutDashboard size={20} className="group-hover:rotate-12 transition-transform" />
-                  Dashboardga qaytish
-                </button>
-                <button 
-                   onClick={() => window.location.reload()}
-                   className="flex items-center justify-center gap-3 w-full py-6 bg-white/5 text-gray-400 rounded-sm font-black border border-white/10 hover:bg-white/10 hover:text-white transition-all uppercase tracking-widest text-sm"
-                >
-                  <Rocket size={20} />
-                  Qayta urinish
-                </button>
-              </div>
+              <button 
+                onClick={() => navigate("/dashboard")}
+                className="flex items-center justify-center gap-3 w-full py-6 bg-[#B23DEB] text-white rounded-sm font-black shadow-[0_20px_40px_rgba(178,61,235,0.3)] hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-sm group"
+              >
+                <LayoutDashboard size={20} className="group-hover:rotate-12 transition-transform" />
+                Dashboardga qaytish
+              </button>
             </div>
           </div>
         </div>
       )}
 
       <style>{`
+        @media print { body { display: none !important; } }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
-        
-        /* Matnni belgilashni o'chirish */
-        .select-none {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scale-up {
-          from { opacity: 0; transform: scale(0.9); }
-          to { opacity: 1; transform: scale(1); }
-        }
+        .select-none { user-select: none; -webkit-user-select: none; }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scale-up { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-scale-up { animation: scale-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
       `}</style>
