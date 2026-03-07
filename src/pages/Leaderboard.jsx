@@ -1,172 +1,198 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase'
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
+import { collection, query, onSnapshot, doc, deleteDoc, orderBy, limit, getDoc } from 'firebase/firestore';
 import { useAuth } from "../context/AuthContext";
-import { Trophy, Medal, Crown, Zap, Star } from 'lucide-react';
+import { Trash2, User, BarChart3, Target, ShieldCheck, Zap, BookOpen, Fingerprint } from 'lucide-react';
 
 const Leaderboard = () => {
   const { user: currentUser } = useAuth();
-  const [leaders, setLeaders] = useState([]);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const isAdmin = currentUser?.email === "admin@gmail.com";
 
   useEffect(() => {
     const q = query(
-      collection(db, "users"), 
+      collection(db, "results"), 
       orderBy("score", "desc"), 
-      limit(20) 
+      limit(100)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const usersData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const resultsData = await Promise.all(snapshot.docs.map(async (resultDoc) => {
+        const data = resultDoc.data();
+        
+        // --- TEST VA MUALLIF MA'LUMOTLARINI ID ORQALI OLISH ---
+        let testAuthor = "Noma'lum Muallif";
+        let testTitle = data.testTitle || "Noma'lum Test";
+
+        if (data.testId) {
+            try {
+                const testRef = doc(db, "tests", data.testId);
+                const testSnap = await getDoc(testRef);
+                if (testSnap.exists()) {
+                    const testData = testSnap.data();
+                    testAuthor = testData.author || testData.creatorEmail || "Muallif topilmadi";
+                    testTitle = testData.title || testTitle; 
+                }
+            } catch (err) {
+                console.log("ID bo'yicha testni olishda xato:", err);
+            }
+        }
+
+        // Foydalanuvchi ismini aniqlash
+        let finalName = data.author || data.userName || (data.email ? data.email.split('@')[0] : "Noma'lum");
+
+        return {
+          id: resultDoc.id, // Natijaning o'z IDsi
+          ...data,
+          displayUser: finalName,
+          testCreator: testAuthor,
+          testId: data.testId // Testning IDsi
+        };
       }));
-      setLeaders(usersData);
+
+      setResults(resultsData);
       setLoading(false);
     }, (error) => {
-      console.error("Firebase Error:", error);
+      console.error("Xatolik:", error);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-[#0a0a0a]">
-         <div className="animate-pulse flex flex-col items-center gap-4">
-            <Trophy className="text-[#B23DEB]" size={60} />
-            <p className="text-[#B23DEB] font-black tracking-widest uppercase text-sm">Reyting Yuklanmoqda...</p>
-         </div>
-      </div>
-    );
-  }
+  const handleDelete = async (id) => {
+    if (!isAdmin) return;
+    if (window.confirm("Ushbu natijani o'chirib yubormoqchimisiz?")) {
+      try {
+        await deleteDoc(doc(db, "results", id));
+      } catch (err) {
+        alert("O'chirishda xatolik!");
+      }
+    }
+  };
+
+  if (loading) return (
+    <div className="h-screen bg-[#0a0a0a] flex items-center justify-center font-black text-[#B23DEB] animate-pulse italic text-2xl">
+       MA'LUMOTLAR YUKLANMOQDA...
+    </div>
+  );
 
   return (
-    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-4 md:p-12 custom-scrollbar">
-      
-      {/* 1. Header Card */}
-      <div className="max-w-6xl mx-auto bg-gradient-to-br from-[#B23DEB] via-[#8a2eb8] to-[#6a1b9a] p-10 text-white  mb-16 relative overflow-hidden group rounded-sm">
-        <div className="relative z-10 flex flex-col items-center text-center">
-      
-          <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-center">Hall of <span className="text-yellow-300">Fame</span></h1>
-          <p className="opacity-80 mt-3 font-medium tracking-wide max-w-md text-center text-sm md:text-base">Platformamizning eng kuchli bilimdonlari va yetakchilari ro'yxati.</p>
-        </div>
-        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity"></div>
-      </div>
-
-      {leaders.length > 0 && (
-        <div className="flex items-end justify-center gap-2 md:gap-8 mb-16 px-2 max-w-4xl mx-auto">
-          
-          {/* 2nd Place */}
-          {leaders[1] && (
-            <div className="flex flex-col items-center flex-1 max-w-[200px] bg-white/[0.03] border border-white/10 p-4 md:p-6 rounded-[2rem] h-48 md:h-52 relative transition-all hover:bg-white/[0.05]">
-              <div className="relative mb-3">
-                 <img src={leaders[1].photoURL || `https://ui-avatars.com/api/?name=${leaders[1].name || 'User'}&background=silver&color=fff`} className="w-12 h-12 md:w-16 md:h-16 rounded-xl border-2 border-gray-400 object-cover" alt="2nd" />
-                 <div className="absolute -bottom-2 -right-2 bg-gray-400 text-white w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px]">2</div>
-              </div>
-              <span className="text-[10px] md:text-sm font-bold text-gray-300 truncate w-full text-center">{leaders[1].name}</span>
-              <span className="text-gray-500 font-black text-lg md:text-xl">{leaders[1].score || 0}</span>
-              <div className="mt-auto text-[8px] md:text-[10px] font-black text-gray-500 tracking-widest uppercase">Silver</div>
-            </div>
-          )}
-
-          {/* 1st Place (Winner) */}
-          {leaders[0] && (
-            <div className="flex flex-col items-center flex-1 max-w-[240px] bg-white/[0.05] border border-[#B23DEB]/30 p-6 md:p-8 rounded-[2.5rem] h-56 md:h-64 relative transform -translate-y-6 shadow-[0_15px_40px_rgba(178,61,235,0.2)]">
-              <Crown className="absolute -top-10 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" size={45} />
-              <div className="relative mb-4 scale-105 md:scale-110">
-                 <img src={leaders[0].photoURL || `https://ui-avatars.com/api/?name=${leaders[0].name || 'User'}&background=EAB308&color=fff`} className="w-16 h-16 md:w-20 md:h-20 rounded-3xl border-4 border-yellow-500/50 object-cover shadow-2xl" alt="1st" />
-                 <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-white w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs">1</div>
-              </div>
-              <span className="text-sm md:text-lg font-black text-white truncate w-full text-center">{leaders[0].name}</span>
-              <span className="text-[#B23DEB] font-black text-2xl md:text-3xl drop-shadow-[0_0_10px_#B23DEB]">{leaders[0].score || 0}</span>
-              <div className="mt-auto text-yellow-500 text-[9px] md:text-[11px] font-black tracking-[0.2em] uppercase">Champion</div>
-            </div>
-          )}
-
-          {/* 3rd Place */}
-          {leaders[2] && (
-            <div className="flex flex-col items-center flex-1 max-w-[200px] bg-white/[0.03] border border-white/10 p-4 md:p-6 rounded-[2rem] h-44 md:h-48 relative transition-all hover:bg-white/[0.05]">
-              <div className="relative mb-3">
-                 <img src={leaders[2].photoURL || `https://ui-avatars.com/api/?name=${leaders[2].name || 'User'}&background=cd7f32&color=fff`} className="w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 border-orange-500/50 object-cover" alt="3rd" />
-                 <div className="absolute -bottom-2 -right-2 bg-orange-600 text-white w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px]">3</div>
-              </div>
-              <span className="text-[10px] md:text-sm font-bold text-gray-300 truncate w-full text-center">{leaders[2].name}</span>
-              <span className="text-gray-500 font-black text-lg md:text-xl">{leaders[2].score || 0}</span>
-              <div className="mt-auto text-[8px] md:text-[10px] font-black text-orange-600 tracking-widest uppercase">Bronze</div>
-            </div>
+    <div className="min-h-screen bg-[#0a0a0a] p-4 md:p-10 font-sans text-white">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="mb-10 flex flex-col md:flex-row items-center justify-between bg-white/[0.02] p-8 rounded-sm border border-white/5 shadow-2xl">
+          <div>
+            <h2 className="text-3xl font-bold uppercase italic tracking-tighter flex items-center gap-3">
+              Natijalar <span className="text-[#B23DEB]">ID Nazorati</span>
+            </h2>
+            <p className="text-gray-500 text-[10px] font-black uppercase mt-1 tracking-[0.3em] italic opacity-60">
+               Tizimdagi barcha natijalar va ID raqamlar
+            </p>
+          </div>
+          {isAdmin && (
+             <div className="mt-4 md:mt-0 bg-red-500/10 border border-red-500/20 px-6 py-2 rounded-2xl flex items-center gap-2">
+                <ShieldCheck size={18} className="text-red-500" />
+                <span className="text-red-500 text-[10px] font-black uppercase italic tracking-widest">Administrator</span>
+             </div>
           )}
         </div>
-      )}
 
-      {/* 3. List Section */}
-      <div className="max-w-5xl mx-auto space-y-4 pb-20">
-        {leaders.length > 0 ? (
-          leaders.map((user, index) => {
-            const isMe = currentUser?.uid === user.id;
+        {/* Results List */}
+        <div className="space-y-4">
+          {results.map((res, index) => {
+            const score = res.score ?? 0;
+            const isTop3 = index < 3;
 
             return (
               <div 
-                key={user.id} 
-                className={`group flex items-center justify-between p-4 md:p-6 rounded-[1.5rem] md:rounded-3xl transition-all duration-300 border backdrop-blur-sm ${
-                  isMe 
-                  ? 'bg-[#B23DEB]/10 border-[#B23DEB]/50 shadow-[0_0_20px_rgba(178,61,235,0.1)]' 
-                  : 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                key={res.id} 
+                className={`relative overflow-hidden bg-white/1 border p-6 rounded-sm flex flex-col md:flex-row items-center justify-between gap-6 transition-all hover:bg-white/[0.03] ${
+                  isTop3 ? 'border-[#B23DEB]/40 bg-[#B23DEB]/1' : 'border-white/5'
                 }`}
               >
-                <div className="flex items-center gap-3 md:gap-6">
-                  <span className={`w-6 md:w-8 font-black text-sm md:text-xl ${index < 3 ? 'text-[#B23DEB]' : 'text-gray-700'}`}>
-                    {index + 1 < 10 ? `0${index + 1}` : index + 1}
-                  </span>
+                {/* 1. O'quvchi ma'lumoti */}
+                <div className="flex items-center gap-6 flex-1 w-full">
+                  <div className={`text-2xl font-black italic w-10 ${isTop3 ? 'text-[#B23DEB]' : 'text-gray-800'}`}>
+                    #{index + 1}
+                  </div>
                   
-                  <div className="relative shrink-0">
-                     <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.name || 'User'}`} className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl object-cover border border-white/10" alt="avatar" />
-                     {isMe && <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#B23DEB] rounded-full border-2 border-[#0a0a0a] animate-pulse"></div>}
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <User className={isTop3 ? 'text-[#B23DEB]' : 'text-gray-600'} size={24} />
+                    </div>
                   </div>
 
                   <div className="min-w-0">
-                    <h4 className={`text-sm md:text-lg font-black tracking-tight truncate ${isMe ? 'text-white' : 'text-gray-300'}`}>
-                      {user.name} {isMe && <span className="text-[#B23DEB] ml-1 text-[10px] italic">(Siz)</span>}
-                    </h4>
-                    <div className="flex items-center gap-2 md:gap-4 mt-1">
-                      <p className="text-[8px] md:text-[10px] text-gray-500 uppercase font-black tracking-widest flex items-center gap-1">
-                        <Zap size={10} className="text-yellow-500 fill-yellow-500" /> 
-                        {user.testsCompleted || 0}
-                      </p>
-                      <p className="text-[8px] md:text-[10px] text-gray-500 uppercase font-black tracking-widest flex items-center gap-1">
-                        <Star size={10} className="text-[#B23DEB]" /> 
-                        XP: {(user.score || 0) * 10}
-                      </p>
+                    <div className="flex items-center gap-2">
+                       <p className="text-[9px] text-[#B23DEB] font-black uppercase tracking-widest">O'quvchi</p>
+                       <span className="text-[8px] text-gray-600 font-mono">ID: {res.id.slice(0, 6)}...</span>
                     </div>
+                    <h4 className="text-xl font-black text-white italic capitalize truncate tracking-tight">
+                      {res.displayUser}
+                    </h4>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-4 md:gap-8 shrink-0">
+
+                {/* 2. Test va ID ma'lumoti */}
+                <div className="flex-1 w-full md:px-10 border-l border-r border-white/5">
+                   <div className="flex items-center gap-2 text-gray-400">
+                      <Target size={14} className="text-[#B23DEB]" />
+                      <span className="text-[11px] font-black uppercase tracking-widest italic truncate">
+                        {res.testTitle || "Noma'lum Test"}
+                      </span>
+                   </div>
+                   
+                   <div className="mt-2 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <BookOpen size={10} className="text-gray-600" />
+                        <p className="text-[9px] text-gray-500 font-bold uppercase">
+                          Muallif: <span className="text-gray-300">{res.testCreator}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Fingerprint size={10} className="text-gray-600" />
+                        <p className="text-[9px] text-gray-500 font-bold uppercase">
+                          Test ID: <span className="text-[#B23DEB] font-mono">{res.testId || "N/A"}</span>
+                        </p>
+                      </div>
+                   </div>
+                </div>
+
+                {/* 3. Ball va O'chirish */}
+                <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end">
                   <div className="text-right">
-                    <p className={`text-xl md:text-3xl font-black ${isMe ? 'text-[#B23DEB]' : 'text-white'}`}>{user.score || 0}</p>
-                    <p className="text-[8px] md:text-[10px] text-gray-600 font-bold uppercase tracking-tighter">Ball</p>
+                    <p className={`text-4xl font-black italic ${score >= 70 ? 'text-green-500' : (score >= 40 ? 'text-orange-500' : 'text-red-500')}`}>
+                      {score}%
+                    </p>
+                    <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.2em] mt-1 text-center">Score</p>
                   </div>
-                  {index < 3 && (
-                     <div className={`p-1.5 md:p-2 rounded-lg md:rounded-xl ${index === 0 ? 'bg-yellow-500/10 text-yellow-500' : 'bg-white/5 text-gray-400'}`}>
-                        <Medal size={20} className="md:w-7 md:h-7" />
-                     </div>
+
+                  {isAdmin && (
+                    <button 
+                      onClick={() => handleDelete(res.id)}
+                      className="p-4 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-xl active:scale-90"
+                      title="Natijani o'chirish"
+                    >
+                      <Trash2 size={20} />
+                    </button>
                   )}
                 </div>
+
+                {/* Background Decoration */}
+                {isTop3 && (
+                  <div className="absolute -right-2 -top-2 opacity-5 rotate-12 pointer-events-none">
+                     <Zap size={80} className="fill-[#B23DEB]" />
+                  </div>
+                )}
               </div>
             );
-          })
-        ) : (
-          <div className="text-center text-gray-500 py-10 font-bold uppercase tracking-widest">Hali hech kim yo'q</div>
-        )}
+          })}
+        </div>
       </div>
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
-      `}</style>
     </div>
   );
 };
