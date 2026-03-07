@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiPaperclip } from 'react-icons/fi';
+import { FiSend, FiPaperclip, FiTrash2 } from 'react-icons/fi'; // FiTrash2 qo'shildi
 import { 
   collection, 
   addDoc, 
   query, 
   orderBy, 
   onSnapshot, 
-  serverTimestamp 
+  serverTimestamp,
+  doc, // Qo'shildi
+  deleteDoc // Qo'shildi
 } from 'firebase/firestore';
 import { db, auth } from '../firebase'; 
 
@@ -14,6 +16,9 @@ const LivingChat = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const scrollRef = useRef(null);
+
+  // Admin ekanligini tekshirish
+  const isAdmin = auth.currentUser?.email === 'admin@gmail.com';
 
   useEffect(() => {
     try {
@@ -64,12 +69,24 @@ const LivingChat = () => {
     }
   };
 
+  // Xabarni o'chirish funksiyasi
+  const handleDelete = async (messageId) => {
+    if (window.confirm("Bu xabarni o'chirishga ishonchingiz komilmi?")) {
+      try {
+        await deleteDoc(doc(db, "messages", messageId));
+      } catch (error) {
+        console.error("O'CHIRISHDA XATO:", error);
+        alert("Xabarni o'chirib bo'lmadi!");
+      }
+    }
+  };
+
   return (
     <div className="flex h-full flex-col bg-[#0A0A0A] border border-white/10 overflow-hidden">
       <div className="p-5 border-b border-white/5 bg-white/2">
         <h3 className="text-white font-bold flex items-center gap-2">
           <span className="w-2 h-2 bg-[#B23DEB] rounded-full animate-pulse shadow-[0_0_10px_#B23DEB]"></span>
-          Global Chat
+          Global Chat {isAdmin && <span className="text-xs text-red-400 font-normal ml-2">(Admin rejimi)</span>}
         </h3>
       </div>
 
@@ -84,7 +101,19 @@ const LivingChat = () => {
         {chatHistory.map((msg) => {
           const isMe = msg.uid === auth.currentUser?.uid;
           return (
-            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative`}>
+              
+              {/* Admin o'chirish tugmasi (Xabarning chap yoki o'ng tomonida ko'rinadi) */}
+              {isAdmin && !isMe && (
+                <button 
+                  onClick={() => handleDelete(msg.id)} 
+                  className="mr-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity self-center"
+                  title="Xabarni o'chirish"
+                >
+                  <FiTrash2 size={14} />
+                </button>
+              )}
+
               <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
                 isMe ? 'bg-[#B23DEB] text-white rounded-tr-none' : 'bg-white/5 border border-white/5 text-gray-300 rounded-tl-none'
               }`}>
@@ -94,13 +123,24 @@ const LivingChat = () => {
                   {msg.createdAt?.toDate ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...'}
                 </p>
               </div>
+
+              {/* O'zining xabarini o'chirish tugmasi (agar admin o'z xabarini o'chirmoqchi bo'lsa) */}
+              {isAdmin && isMe && (
+                <button 
+                  onClick={() => handleDelete(msg.id)} 
+                  className="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity self-center"
+                  title="Xabarni o'chirish"
+                >
+                  <FiTrash2 size={14} />
+                </button>
+              )}
             </div>
           );
         })}
       </div>
 
       <form onSubmit={handleSend} className="p-4 bg-[#111] border-t border-white/5">
-        <div className="flex items-center gap-2 bg-[#0A0A0A] border border-white/10  p-2 focus-within:border-[#B23DEB]/50 transition-all">
+        <div className="flex items-center gap-2 bg-[#0A0A0A] border border-white/10  p-2 focus-within:border-[#B23DEB]/50 transition-all rounded-lg">
           <input 
             type="text" 
             value={message}
