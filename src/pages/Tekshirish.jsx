@@ -1,221 +1,185 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { db, auth } from "../firebase"; 
+import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { 
-  IoCameraOutline, 
-  IoImageOutline, 
-  IoScanOutline, 
-  IoCheckmarkDoneCircle, 
-  IoCloudUploadOutline,
-  IoFlaskOutline,
-  IoAlertCircleOutline
+  IoCodeSlash, 
+  IoSend, 
+  IoTrash, 
+  IoTerminal,
+  IoCheckmarkCircle,
+  IoTimeOutline
 } from "react-icons/io5";
 
 const Tekshirish = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [result, setResult] = useState(null);
-  const fileInputRef = useRef(null);
+  const [taskText, setTaskText] = useState(""); 
+  const [isUploading, setIsUploading] = useState(false);
+  const [vazifalar, setVazifalar] = useState([]);
+  
+  const user = auth.currentUser;
+  const isAdmin = user?.email === "admin@gmail.com";
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(URL.createObjectURL(file));
-      setResult(null);
+  useEffect(() => {
+    if (isAdmin) {
+      const q = query(collection(db, "vazifalar"), orderBy("timestamp", "desc"));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setVazifalar(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      return () => unsubscribe();
+    }
+  }, [isAdmin]);
+
+  const submitVazifa = async () => {
+    if (!taskText.trim()) return;
+    setIsUploading(true);
+    try {
+      await addDoc(collection(db, "vazifalar"), {
+        content: taskText, 
+        status: "Kutilmoqda",
+        timestamp: new Date(),
+        userEmail: user?.email || "Anonim"
+      });
+      setTaskText("");
+      alert("Kod qabul qilindi!");
+    } catch (error) {
+      alert("Xatolik!");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const startAnalysis = () => {
-    if (!selectedImage) return;
-    setIsScanning(true);
-    
-    setTimeout(() => {
-      setIsScanning(false);
-      setResult({
-        score: "92/100",
-        feedback: "Vazifa deyarli mukammal. 3-misoldagi formulada kichik xatolik bor, lekin umumiy mantiq to'g'ri.",
-        status: "Accepted"
-      });
-    }, 3500);
+  const deleteVazifa = async (id) => {
+    if(window.confirm("O'chirilsinmi?")) {
+      await deleteDoc(doc(db, "vazifalar", id));
+    }
   };
 
   return (
-    <div className="h-screen w-full bg-[#0a0a0a] flex flex-col overflow-hidden text-white font-sans">
+    <div className="min-h-screen w-full bg-[#080808] text-zinc-300 font-sans selection:bg-[#B23DEB]/30">
       
-      <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar">
-        <div className="mx-auto pb-20">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-white/5 pb-10">
-            <div>
-              <div className="flex items-center gap-2 text-[#B23DEB] mb-4">
-                <IoFlaskOutline size={18} className="animate-bounce" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]">AI Analysis Lab v1.0</span>
-              </div>
-              <h1 className="text-6xl font-black italic tracking-tighter uppercase">
-                Vazifa <span className="text-[#B23DEB] not-italic">Skaneri</span>
-              </h1>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Tizim holati</p>
-              <div className="flex items-center gap-2 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></div>
-                <span className="text-[10px] font-black text-emerald-500 uppercase">Ready to Scan</span>
-              </div>
-            </div>
+      {/* --- NAV BAR --- */}
+      <nav className="max-w-6xl mx-auto px-6 py-8 flex justify-between items-center border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#B23DEB] to-[#7928CA] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(178,61,235,0.3)]">
+            <IoTerminal className="text-white text-xl" />
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            <div className="space-y-6">
-              <div 
-                className={`relative aspect-4/5 rounded-sm border-2 border-dashed transition-all duration-700 overflow-hidden flex flex-col items-center justify-center bg-[#111] ${
-                  selectedImage ? 'border-[#B23DEB]/40' : 'border-white/5 hover:border-white/10'
-                }`}
-              >
-                {selectedImage ? (
-                  <>
-                    <img src={selectedImage} alt="Preview" className="w-full h-full object-cover opacity-60" />
-                    
-                    {isScanning && (
-                      <div className="absolute inset-0 z-10">
-                        <div className="w-full h-1 bg-[#B23DEB] shadow-[0_0_20px_#B23DEB] absolute top-0 animate-scan"></div>
-                        <div className="w-full h-full bg-gradient-to-b from-[#B23DEB]/10 to-transparent"></div>
-                      </div>
-                    )}
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
-                  </>
-                ) : (
-                  <div className="text-center p-10">
-                    <div className="w-24 h-24 bg-white/5 rounded-4xl flex items-center justify-center mx-auto mb-6 border border-white/5">
-                      <IoCloudUploadOutline size={40} className="text-gray-700" />
-                    </div>
-                    <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.3em] mb-2">Vazifani yuklang</p>
-                    <p className="text-gray-700 text-[9px] font-bold uppercase tracking-widest max-w-50">Rasmga oling yoki galereyadan tanlang (PNG, JPG)</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-4">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
-                  ref={fileInputRef} 
-                  onChange={handleImageUpload}
-                />
-                <button 
-                  onClick={() => fileInputRef.current.click()}
-                  className="flex-1 py-5 rounded-sm bg-[#111] border border-white/10  font-black text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all"
-                >
-                  <IoImageOutline size={20} /> GALEREYA
-                </button>
-                <button 
-                  onClick={() => fileInputRef.current.click()} 
-                  className="flex-1 py-5 bg-[#111] rounded-sm border border-white/10 font-black text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all"
-                >
-                  <IoCameraOutline size={20} /> KAMERA
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <div className="flex-1 bg-[#111] border border-white/5 rounded-dm p-10 flex flex-col relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-10 opacity-5">
-                   <IoScanOutline size={150} />
-                </div>
-
-                {!result && !isScanning && (
-                  <div className="h-full flex flex-col items-center justify-center text-center">
-                    <IoAlertCircleOutline size={50} className="text-gray-800 mb-6" />
-                    <h3 className="text-gray-600 font-black uppercase text-xs tracking-widest italic">Tahlil qilish uchun rasm yuklang</h3>
-                    <button 
-                      onClick={startAnalysis}
-                      disabled={!selectedImage}
-                      className={`mt-8 px-12 py-4  font-black text-[10px]  uppercase transition-all ${
-                        selectedImage 
-                        ? 'bg-[#B23DEB] text-white  hover:scale-105' 
-                        : 'bg-white/5 text-gray-700 cursor-not-allowed'
-                      }`}
-                    >
-                      SKANERNI BOSHLASH
-                    </button>
-                  </div>
-                )}
-
-                {isScanning && (
-                  <div className="h-full flex flex-col items-center justify-center">
-                    <div className="relative w-20 h-20 mb-8">
-                       <div className="absolute inset-0 border-4 border-[#B23DEB]/20 rounded-full"></div>
-                       <div className="absolute inset-0 border-4 border-t-[#B23DEB] rounded-full animate-spin"></div>
-                    </div>
-                    <p className="text-[#B23DEB] font-black italic uppercase tracking-[0.4em] text-sm animate-pulse">Analiz qilinmoqda...</p>
-                    <p className="text-gray-700 text-[9px] font-bold uppercase tracking-widest mt-4">Neyrotizim ma'lumotlarni o'qimoqda</p>
-                  </div>
-                )}
-
-                {result && (
-                  <div className="space-y-8 animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                      <div className="w-20 h-20 bg-[#B23DEB]/10 rounded-3xl flex items-center justify-center border border-[#B23DEB]/20">
-                        <IoCheckmarkDoneCircle size={40} className="text-[#B23DEB]" />
-                      </div>
-                      <div className="text-right">
-                         <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Samaradorlik</p>
-                         <h2 className="text-5xl font-black italic text-[#B23DEB] tracking-tighter">{result.score}</h2>
-                      </div>
-                    </div>
-
-                    <div className="h-0.5 w-full bg-white/5"></div>
-
-                    <div>
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">AI Feedback</p>
-                      <div className="bg-white/2 border border-white/5 p-6 italic text-gray-300 leading-relaxed text-sm">
-                        "{result.feedback}"
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 pt-6">
-                       <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                          <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-1">Status</p>
-                          <p className="text-xs font-black text-emerald-500 uppercase italic tracking-tighter">Accepted</p>
-                       </div>
-                       <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                          <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-1">XP Points</p>
-                          <p className="text-xs font-black text-[#B23DEB] uppercase italic tracking-tighter">+450 EXP</p>
-                       </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <button 
-                className="mt-6 w-full py-5 bg-white text-black text-sm  font-black text-sm  uppercase hover:bg-[#B23DEB] hover:text-white transition-all shadow-xl"
-                onClick={() => {setSelectedImage(null); setResult(null);}}
-              >
-                YANGI SKANERLASH
-              </button>
-            </div>
+          <div>
+            <h1 className="text-xl font-black text-white tracking-tight uppercase italic">
+              {isAdmin ? "Admin" : "Student"} <span className="text-[#B23DEB] not-italic underline decoration-2 underline-offset-4"></span>
+            </h1>
           </div>
         </div>
-      </div>
 
-      <style>{`
-        @keyframes scan {
-          0% { top: 0%; }
-          100% { top: 100%; }
-        }
-        .animate-scan {
-          animation: scan 2s linear infinite;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out forwards;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
-      `}</style>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block text-right">
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-none">Status</p>
+            <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-tighter">System Online</p>
+          </div>
+          <div className="w-px h-6 bg-white/10 mx-2"></div>
+          <p className="text-[10px] font-medium text-zinc-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+            {user?.email?.split('@')[0]}
+          </p>
+        </div>
+      </nav>
+
+      <main className="max-w-6xl mx-auto px-6 py-12">
+        {!isAdmin ? (
+          /* --- STUDENT UI --- */
+          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black text-white uppercase italic">Kodni <span className="text-[#B23DEB]">Yuborish</span></h2>
+              <p className="text-zinc-500 text-sm">Vazifangizni pastdagi terminalga kiriting va tasdiqlang.</p>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#B23DEB] to-transparent rounded-sm blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+              <div className="relative bg-[#0D0D0D] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border-b border-white/5">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/40"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/40"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/40"></div>
+                  </div>
+                  <p className="text-[10px] font-mono text-zinc-500 ml-4 uppercase tracking-widest">code.py</p>
+                </div>
+                <textarea 
+                  value={taskText}
+                  onChange={(e) => setTaskText(e.target.value)}
+                  placeholder="// Bu yerga kodingizni yozing..."
+                  className="w-full h-[400px] bg-transparent p-8 text-sm font-mono text-emerald-400/90 outline-none resize-none placeholder:text-zinc-800"
+                />
+              </div>
+            </div>
+
+            <button 
+              onClick={submitVazifa}
+              disabled={isUploading || !taskText.trim()}
+              className="group relative w-full inline-flex items-center justify-center px-8 py-4 font-black text-white bg-[#B23DEB] rounded-xl overflow-hidden transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <IoSend className="mr-3 text-lg" />
+              <span className="uppercase tracking-[0.2em] text-xs">Vazifani topshirish</span>
+            </button>
+          </div>
+        ) : (
+          /* --- ADMIN UI --- */
+          <div className="space-y-10">
+            <div className="flex justify-between items-end">
+              <h2 className="text-3xl font-black text-white uppercase italic">Inbox <span className="text-[#B23DEB] font-normal not-italic opacity-50">/</span> {vazifalar.length}</h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {vazifalar.map((v) => (
+                <div key={v.id} className="bg-[#0D0D0D] border border-white/5 rounded-sm overflow-hidden hover:border-[#B23DEB]/40 transition-all group shadow-xl">
+                  {/* Card Header */}
+                  <div className="px-6 py-4 bg-white/[0.02] border-b border-white/5 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#B23DEB]/10 flex items-center justify-center text-[#B23DEB]">
+                        <IoCodeSlash size={14} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-zinc-300">{v.userEmail}</p>
+                        <div className="flex items-center gap-2 text-[9px] text-zinc-600 font-bold uppercase tracking-wider">
+                          <IoTimeOutline />
+                          {v.timestamp?.toDate().toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => deleteVazifa(v.id)}
+                      className="p-2 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                    >
+                      <IoTrash size={18} />
+                    </button>
+                  </div>
+
+                  {/* Code Body */}
+                  <div className="p-6">
+                    <pre className="bg-black/50 p-6 rounded-xl border border-white/5 overflow-x-auto text-[13px] font-mono text-blue-400/90 leading-relaxed scrollbar-thin scrollbar-thumb-zinc-800">
+                      {v.content}
+                    </pre>
+                  </div>
+
+                  {/* Card Footer */}
+                  <div className="px-6 py-4 bg-white/[0.02] border-t border-white/5 flex gap-3">
+                    <button className="flex-1 py-3 bg-emerald-500/5 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/20 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                      <IoCheckmarkCircle size={14}/> Tasdiqlash
+                    </button>
+                    <button className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-zinc-500 hover:text-white border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                      Rad etish
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              {vazifalar.length === 0 && (
+                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em]">Hozircha vazifalar yo'q</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
