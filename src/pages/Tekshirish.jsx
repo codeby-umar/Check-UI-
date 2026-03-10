@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
 import { db, auth } from "../firebase"; 
-import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, getDoc, where, getDocs } from "firebase/firestore";
 import { 
-  IoCodeSlash, 
-  IoSend, 
-  IoTrash, 
-  IoTerminal,
-  IoCheckmarkCircle,
-  IoTimeOutline
+  IoCodeSlash, IoSend, IoTrash, IoTerminal, IoCheckmarkCircle, IoTimeOutline
 } from "react-icons/io5";
+import { toast, Toaster } from "react-hot-toast";
 
 const Tekshirish = () => {
   const [taskText, setTaskText] = useState(""); 
@@ -18,6 +14,7 @@ const Tekshirish = () => {
   const user = auth.currentUser;
   const isAdmin = user?.email === "admin@gmail.com";
 
+  // --- 1. ADMIN UCHUN VAZIFALARNI OLIYASH ---
   useEffect(() => {
     if (isAdmin) {
       const q = query(collection(db, "vazifalar"), orderBy("timestamp", "desc"));
@@ -28,6 +25,35 @@ const Tekshirish = () => {
     }
   }, [isAdmin]);
 
+  // --- 2. OTA-ONAGA TASDIQLASH XABARINI YUBORISH ---
+  const sendApprovalNotification = async (vazifa) => {
+    try {
+      // Foydalanuvchi ma'lumotlarini bazadan qidiramiz (Email orqali)
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", vazifa.userEmail));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) return;
+
+      const userData = querySnapshot.docs[0].data();
+      const studentName = userData.name || "O'quvchi";
+      const phone = userData.phone || "777777777";
+      const parentTopic = phone.replace(/\D/g, "");
+
+      const title = `VAZIFA TASDIQLANDI ✅`;
+      const message = `Assalomu alaykum! \n\nFarzandingiz ${studentName} bugungi uy vazifasini muvaffaqiyatli topshirdi va o'qituvchi tomonidan tasdiqlandi. \n\nBilim olishdan charchamasin, qo'llab-quvvatlayotganingiz uchun rahmat! ✨`;
+      const img = "https://static.vecteezy.com/system/resources/thumbnails/014/484/853/small/school-student-passing-exam-in-classroom-free-vector.jpg";
+
+      const url = `https://ntfy.sh/${parentTopic}/publish?message=${encodeURIComponent(message)}&title=${encodeURIComponent(title)}&tags=white_check_mark,partying_face&priority=high&attach=${encodeURIComponent(img)}`;
+      
+      await fetch(url);
+      toast.success("Ota-onaga xushxabar yuborildi! 📱");
+    } catch (error) {
+      console.error("Xabarnoma yuborishda xato:", error);
+    }
+  };
+
+  // --- 3. VAZIFANI TOPSHIRISH ---
   const submitVazifa = async () => {
     if (!taskText.trim()) return;
     setIsUploading(true);
@@ -39,9 +65,9 @@ const Tekshirish = () => {
         userEmail: user?.email || "Anonim"
       });
       setTaskText("");
-      alert("Kod qabul qilindi!");
+      toast.success("Kod qabul qilindi! ✨");
     } catch (error) {
-      alert("Xatolik!");
+      toast.error("Xatolik yuz berdi!");
     } finally {
       setIsUploading(false);
     }
@@ -50,11 +76,13 @@ const Tekshirish = () => {
   const deleteVazifa = async (id) => {
     if(window.confirm("O'chirilsinmi?")) {
       await deleteDoc(doc(db, "vazifalar", id));
+      toast.success("O'chirildi");
     }
   };
 
   return (
     <div className="min-h-screen w-full bg-[#080808] text-zinc-300 font-sans selection:bg-[#B23DEB]/30">
+      <Toaster position="bottom-right" />
       
       {/* --- NAV BAR --- */}
       <nav className="max-w-6xl mx-auto px-6 py-8 flex justify-between items-center border-b border-white/5">
@@ -64,19 +92,19 @@ const Tekshirish = () => {
           </div>
           <div>
             <h1 className="text-xl font-black text-white tracking-tight uppercase italic">
-              {isAdmin ? "Admin" : "Student"} <span className="text-[#B23DEB] not-italic underline decoration-2 underline-offset-4"></span>
+              {isAdmin ? "Admin" : "Student"} <span className="text-[#B23DEB] not-italic underline decoration-2 underline-offset-4">Portal</span>
             </h1>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:block text-right">
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-none">Status</p>
-            <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-tighter">System Online</p>
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-none">Access Level</p>
+            <p className="text-[11px] font-bold text-[#B23DEB] uppercase tracking-tighter italic">Verified Session</p>
           </div>
           <div className="w-px h-6 bg-white/10 mx-2"></div>
           <p className="text-[10px] font-medium text-zinc-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-            {user?.email?.split('@')[0]}
+            {user?.email}
           </p>
         </div>
       </nav>
@@ -87,25 +115,17 @@ const Tekshirish = () => {
           <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="space-y-2">
               <h2 className="text-3xl font-black text-white uppercase italic">Kodni <span className="text-[#B23DEB]">Yuborish</span></h2>
-              <p className="text-zinc-500 text-sm">Vazifangizni pastdagi terminalga kiriting va tasdiqlang.</p>
+              <p className="text-zinc-500 text-sm">Topshiriq kodingizni kiriting.</p>
             </div>
 
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-[#B23DEB] to-transparent rounded-sm blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
               <div className="relative bg-[#0D0D0D] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-                <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border-b border-white/5">
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/40"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/40"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/40"></div>
-                  </div>
-                  <p className="text-[10px] font-mono text-zinc-500 ml-4 uppercase tracking-widest">code.py</p>
-                </div>
                 <textarea 
                   value={taskText}
                   onChange={(e) => setTaskText(e.target.value)}
-                  placeholder="// Bu yerga kodingizni yozing..."
-                  className="w-full h-[400px] bg-transparent p-8 text-sm font-mono text-emerald-400/90 outline-none resize-none placeholder:text-zinc-800"
+                  placeholder="// Kodingizni shu yerga paste qiling..."
+                  className="w-full h-[350px] bg-transparent p-8 text-sm font-mono text-emerald-400/90 outline-none resize-none placeholder:text-zinc-800"
                 />
               </div>
             </div>
@@ -113,69 +133,49 @@ const Tekshirish = () => {
             <button 
               onClick={submitVazifa}
               disabled={isUploading || !taskText.trim()}
-              className="group relative w-full inline-flex items-center justify-center px-8 py-4 font-black text-white bg-[#B23DEB] rounded-xl overflow-hidden transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+              className="group relative w-full inline-flex items-center justify-center px-8 py-4 font-black text-white bg-[#B23DEB] rounded-xl overflow-hidden transition-all hover:scale-[1.01] active:scale-95"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              <IoSend className="mr-3 text-lg" />
-              <span className="uppercase tracking-[0.2em] text-xs">Vazifani topshirish</span>
+              <IoSend className="mr-3" />
+              <span className="uppercase tracking-widest text-xs">Vazifani yuborish</span>
             </button>
           </div>
         ) : (
           /* --- ADMIN UI --- */
           <div className="space-y-10">
-            <div className="flex justify-between items-end">
-              <h2 className="text-3xl font-black text-white uppercase italic">Inbox <span className="text-[#B23DEB] font-normal not-italic opacity-50">/</span> {vazifalar.length}</h2>
-            </div>
+            <h2 className="text-3xl font-black text-white uppercase italic">Kelib tushgan <span className="text-[#B23DEB]">vazifalar</span></h2>
 
             <div className="grid grid-cols-1 gap-6">
               {vazifalar.map((v) => (
-                <div key={v.id} className="bg-[#0D0D0D] border border-white/5 rounded-sm overflow-hidden hover:border-[#B23DEB]/40 transition-all group shadow-xl">
-                  {/* Card Header */}
-                  <div className="px-6 py-4 bg-white/[0.02] border-b border-white/5 flex justify-between items-center">
+                <div key={v.id} className="bg-[#0D0D0D] border border-white/5 rounded-2xl overflow-hidden hover:border-[#B23DEB]/40 transition-all">
+                  <div className="px-6 py-4 bg-white/[0.02] flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#B23DEB]/10 flex items-center justify-center text-[#B23DEB]">
                         <IoCodeSlash size={14} />
                       </div>
-                      <div>
-                        <p className="text-xs font-black text-zinc-300">{v.userEmail}</p>
-                        <div className="flex items-center gap-2 text-[9px] text-zinc-600 font-bold uppercase tracking-wider">
-                          <IoTimeOutline />
-                          {v.timestamp?.toDate().toLocaleString()}
-                        </div>
-                      </div>
+                      <p className="text-xs font-black text-zinc-300">{v.userEmail}</p>
                     </div>
-                    <button 
-                      onClick={() => deleteVazifa(v.id)}
-                      className="p-2 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                    >
-                      <IoTrash size={18} />
-                    </button>
+                    <button onClick={() => deleteVazifa(v.id)} className="text-zinc-600 hover:text-red-500"><IoTrash size={18} /></button>
                   </div>
 
-                  {/* Code Body */}
                   <div className="p-6">
-                    <pre className="bg-black/50 p-6 rounded-xl border border-white/5 overflow-x-auto text-[13px] font-mono text-blue-400/90 leading-relaxed scrollbar-thin scrollbar-thumb-zinc-800">
+                    <pre className="bg-black/40 p-5 rounded-xl border border-white/5 text-[13px] font-mono text-blue-300">
                       {v.content}
                     </pre>
                   </div>
 
-                  {/* Card Footer */}
-                  <div className="px-6 py-4 bg-white/[0.02] border-t border-white/5 flex gap-3">
-                    <button className="flex-1 py-3 bg-emerald-500/5 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/20 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                      <IoCheckmarkCircle size={14}/> Tasdiqlash
+                  <div className="px-6 py-4 flex gap-3">
+                    <button 
+                      onClick={() => sendApprovalNotification(v)}
+                      className="flex-1 py-3 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    >
+                      <IoCheckmarkCircle size={14}/> Tasdiqlash va SMS yuborish
                     </button>
-                    <button className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-zinc-500 hover:text-white border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    <button className="flex-1 py-3 bg-white/5 hover:bg-red-500/20 text-zinc-500 hover:text-red-500 border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                       Rad etish
                     </button>
                   </div>
                 </div>
               ))}
-              
-              {vazifalar.length === 0 && (
-                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                  <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em]">Hozircha vazifalar yo'q</p>
-                </div>
-              )}
             </div>
           </div>
         )}
