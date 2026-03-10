@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiPaperclip, FiTrash2 } from 'react-icons/fi'; // FiTrash2 qo'shildi
+import { FiSend, FiTrash2 } from 'react-icons/fi';
 import { 
-  collection, 
-  addDoc, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  serverTimestamp,
-  doc, // Qo'shildi
-  deleteDoc // Qo'shildi
+  collection, addDoc, query, orderBy, 
+  onSnapshot, serverTimestamp, doc, deleteDoc 
 } from 'firebase/firestore';
 import { db, auth } from '../firebase'; 
 
@@ -17,32 +11,26 @@ const LivingChat = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const scrollRef = useRef(null);
 
-  // Admin ekanligini tekshirish
-  const isAdmin = auth.currentUser?.email === 'admin@gmail.com';
+  const currentUser = auth.currentUser;
+  const isAdmin = currentUser?.email === 'admin@gmail.com';
+
+  const getUserName = () => {
+    if (currentUser?.displayName) return currentUser.displayName;
+    if (currentUser?.email) return currentUser.email.split('@')[0];
+    return `User_${currentUser?.uid?.substring(0, 4) || 'Anon'}`;
+  };
 
   useEffect(() => {
-    try {
-      const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-      
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const msgs = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setChatHistory(msgs);
-      }, (error) => {
-        console.error("FIREBASE ERROR:", error.message);
-      });
-
-      return () => unsubscribe();
-    } catch (e) {
-      console.log("Qidiruvda xato:", e);
-    }
+    const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setChatHistory(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [chatHistory]);
 
@@ -51,108 +39,125 @@ const LivingChat = () => {
     if (!message.trim()) return;
 
     try {
-      const currentUser = auth.currentUser;
-      
-      const newMessage = {
+      const name = getUserName();
+      await addDoc(collection(db, "messages"), {
         text: message.trim(),
-        uid: currentUser?.uid || 'guest_' + Math.random().toString(36).substr(2, 9),
-        displayName: currentUser?.displayName || 'Mehmon',
-        photoURL: currentUser?.photoURL || '',
+        uid: currentUser?.uid || 'anon',
+        displayName: name,
         createdAt: serverTimestamp(),
-      };
-
+      });
       setMessage(''); 
-      await addDoc(collection(db, "messages"), newMessage);
     } catch (error) {
-      console.error("YUBORISHDA XATO:", error);
-      alert("Xabar ketmadi! Konsolni tekshir.");
+      console.error("Chat Logic Error:", error);
     }
   };
 
-  // Xabarni o'chirish funksiyasi
-  const handleDelete = async (messageId) => {
-    if (window.confirm("Bu xabarni o'chirishga ishonchingiz komilmi?")) {
-      try {
-        await deleteDoc(doc(db, "messages", messageId));
-      } catch (error) {
-        console.error("O'CHIRISHDA XATO:", error);
-        alert("Xabarni o'chirib bo'lmadi!");
-      }
+  const handleDelete = async (id) => {
+    if (window.confirm("Xabarni butunlay o'chirish?")) {
+      await deleteDoc(doc(db, "messages", id));
     }
   };
 
   return (
-    <div className="flex h-full flex-col bg-[#0A0A0A] border border-white/10 overflow-hidden">
-      <div className="p-5 border-b border-white/5 bg-white/2">
-        <h3 className="text-white font-bold flex items-center gap-2">
-          <span className="w-2 h-2 bg-[#B23DEB] rounded-full animate-pulse shadow-[0_0_10px_#B23DEB]"></span>
-          Global Chat {isAdmin && <span className="text-xs text-red-400 font-normal ml-2">(Admin rejimi)</span>}
-        </h3>
+    <div className="flex h-full flex-col bg-[#050505] text-slate-300 font-sans border-l border-white/5">
+      
+      {/* Header */}
+      <div className="px-6 py-5 bg-[#0A0A0A]/95 backdrop-blur-xl border-b border-white/5 flex justify-between items-center z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 bg-[#B23DEB] rounded-full shadow-[0_0_12px_#B23DEB] animate-pulse"></div>
+          <h3 className="text-[11px] font-black tracking-[0.3em] uppercase text-white/80">
+             Global<span className="text-[#B23DEB]">Chat</span>
+          </h3>
+        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2 px-3 py-1 bg-red-500/5 border border-red-500/20 rounded-full">
+            <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+            <span className="text-[9px] text-red-500 font-black tracking-widest uppercase">Root Access</span>
+          </div>
+        )}
       </div>
 
+      {/* Message Feed */}
       <div 
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar bg-[radial-gradient(circle_at_top_right,_#B23DEB08,_transparent_40%)]"
       >
-        {chatHistory.length === 0 && (
-          <p className="text-gray-600 text-center text-sm mt-10">Hozircha xabarlar yo'q...</p>
-        )}
-        
         {chatHistory.map((msg) => {
-          const isMe = msg.uid === auth.currentUser?.uid;
+          const isMe = msg.uid === currentUser?.uid;
           return (
-            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative`}>
+            <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group relative`}>
               
-              {/* Admin o'chirish tugmasi (Xabarning chap yoki o'ng tomonida ko'rinadi) */}
-              {isAdmin && !isMe && (
-                <button 
-                  onClick={() => handleDelete(msg.id)} 
-                  className="mr-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity self-center"
-                  title="Xabarni o'chirish"
-                >
-                  <FiTrash2 size={14} />
-                </button>
-              )}
+              {/* Sender Name - Har doim tepada va kichik */}
+              <span className={`text-[10px] font-bold tracking-wider mb-1.5 px-1 ${isMe ? 'text-[#B23DEB]' : 'text-slate-500'}`}>
+                {isMe ? 'Siz' : msg.displayName}
+              </span>
 
-              <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                isMe ? 'bg-[#B23DEB] text-white rounded-tr-none' : 'bg-white/5 border border-white/5 text-gray-300 rounded-tl-none'
-              }`}>
-                {!isMe && <p className="text-[10px] font-bold text-[#B23DEB] mb-1">{msg.displayName}</p>}
-                <p className="break-words">{msg.text}</p>
-                <p className="text-[8px] opacity-30 mt-1 text-right">
-                  {msg.createdAt?.toDate ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...'}
-                </p>
+              <div className={`relative max-w-[85%] sm:max-w-[70%] ${isMe ? 'flex flex-row-reverse' : 'flex-row'} items-center gap-3`}>
+                {/* Bubble */}
+                <div className={`px-4 py-3 rounded-2xl text-[13px] leading-relaxed transition-all duration-300 ${
+                  isMe 
+                  ? 'bg-[#B23DEB] text-white rounded-tr-none shadow-lg shadow-[#B23DEB]/10' 
+                  : 'bg-[#111111] border border-white/5 text-slate-200 rounded-tl-none'
+                }`}>
+                  {msg.text}
+                </div>
+
+                {/* Admin Action */}
+                {isAdmin && (
+                  <button 
+                    onClick={() => handleDelete(msg.id)}
+                    className="p-2 text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-90"
+                    title="Xabarni o'chirish"
+                  >
+                    <FiTrash2 size={15} />
+                  </button>
+                )}
               </div>
 
-              {/* O'zining xabarini o'chirish tugmasi (agar admin o'z xabarini o'chirmoqchi bo'lsa) */}
-              {isAdmin && isMe && (
-                <button 
-                  onClick={() => handleDelete(msg.id)} 
-                  className="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity self-center"
-                  title="Xabarni o'chirish"
-                >
-                  <FiTrash2 size={14} />
-                </button>
-              )}
+              {/* Timestamp */}
+              <span className="text-[8px] text-slate-700 mt-1.5 font-medium tracking-tighter uppercase px-1">
+                {msg.createdAt?.toDate ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--'}
+              </span>
             </div>
           );
         })}
       </div>
 
-      <form onSubmit={handleSend} className="p-4 bg-[#111] border-t border-white/5">
-        <div className="flex items-center gap-2 bg-[#0A0A0A] border border-white/10  p-2 focus-within:border-[#B23DEB]/50 transition-all rounded-lg">
-          <input 
-            type="text" 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Xabar..." 
-            className="bg-transparent border-none outline-none text-white text-sm w-full py-1 px-2"
-          />
-          <button type="submit" className="bg-[#B23DEB] text-white p-2 rounded-lg hover:opacity-80 active:scale-90">
-            <FiSend size={16} />
-          </button>
-        </div>
-      </form>
+      {/* Input Terminal */}
+      <div className="p-5 bg-[#0A0A0A] border-t border-white/5">
+        <form onSubmit={handleSend} className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 bg-[#111] border border-white/10 p-2 rounded-2xl focus-within:border-[#B23DEB]/40 focus-within:bg-[#141414] transition-all">
+            <input 
+              type="text" 
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Xabar yo'llash..." 
+              className="bg-transparent border-none outline-none text-slate-200 text-sm w-full py-2 px-3 placeholder:text-slate-800"
+            />
+            <button 
+              type="submit" 
+              disabled={!message.trim()}
+              className="bg-[#B23DEB] text-white p-3 rounded-xl hover:bg-[#9b34cd] hover:shadow-[0_0_15px_#B23DEB44] transition-all active:scale-95 disabled:opacity-20 disabled:grayscale"
+            >
+              <FiSend size={18} />
+            </button>
+          </div>
+          
+          <div className="flex justify-between items-center mt-3 px-2">
+            <span className="text-[9px] text-slate-700 font-bold uppercase tracking-[0.2em]">
+              Auth: <span className="text-slate-500">{getUserName()}</span>
+            </span>
+            <span className="text-[9px] text-slate-800 font-mono tracking-widest">v2.4.0-STABLE</span>
+          </div>
+        </form>
+      </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #B23DEB22; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB44; }
+      `}</style>
     </div>
   );
 };

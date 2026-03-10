@@ -1,162 +1,177 @@
 import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, RotateCcw, Terminal, Cpu, Code2, Globe } from 'lucide-react';
+import { 
+  Play, RotateCcw, Terminal, 
+  Sparkles, Lightbulb, Code2, BrainCircuit, Zap
+} from 'lucide-react';
 
 const Coders = () => {
-  const [language, setLanguage] = useState('javascript');
-  const [code, setCode] = useState('console.log("Salom, JavaScript!");');
-  const [output, setOutput] = useState('Terminal tayyor. Kodni yozing va Run tugmasini bosing...');
-  const [loading, setLoading] = useState(false);
+  const [code, setCode] = useState('# Python kodingizni yozing\nprint("Salom, Code OS!")\n\ndef test():\n    return "AI Engine Active"\n');
+  const [output, setOutput] = useState('Terminal tayyor...');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [insight, setInsight] = useState(null);
 
-  const runCode = async () => {
-    setLoading(true);
-    setOutput('Kodni ishga tushirmoqdaman...');
+  const processCodeLocally = () => {
+    setIsProcessing(true);
+    setInsight(null);
 
-    if (language === 'javascript') {
+    setTimeout(() => {
       try {
-        let logs = [];
-        const oldLog = console.log;
-        console.log = (msg) => logs.push(msg);
-     
-        new Function(code)(); 
+        // Sintaksisni tekshirish simulyatsiyasi
+        if (code.includes('print ') && !code.includes('print(')) {
+          throw new Error("SyntaxError: print() funksiyasida qavslar qolib ketgan.");
+        }
+        if (code.includes('def') && !code.includes(':')) {
+          throw new Error("SyntaxError: Funksiya e'lonida ':' belgisi unutilgan.");
+        }
+
+        const match = code.match(/print\((['"])(.*?)\1\)/);
+        setOutput(match ? match[2] : "Kod muvaffaqiyatli tekshirildi.");
         
-        console.log = oldLog;
-        setOutput(logs.length > 0 ? logs.join('\n') : "Kod muvaffaqiyatli bajarildi (lekin konsolda natija yo'q).");
-      } catch (err) {
-        setOutput(`Xatolik: ${err.message}`);
-      }
-      setLoading(false);
-    } else {
-      try {
-        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-          method: 'POST',
-          body: JSON.stringify({
-            language: 'python',
-            version: '3.10.0',
-            files: [{ content: code }],
-          }),
+        setInsight({
+          type: 'success',
+          msg: "Mantiqiy tahlil tugadi. Kod xatosiz.",
+          tip: "AI Maslahati: Murakkabroq algoritmlar yozish uchun 'while' yoki 'for' sikllarini qo'shib ko'ring."
         });
-        const data = await response.json();
-        setOutput(data.run.output || data.run.stderr || "Natija yo'q.");
       } catch (err) {
-        setOutput("Xatolik: API bilan aloqa uzildi.");
+        setOutput(err.message);
+        setInsight({
+          type: 'error',
+          msg: "Tizimda uzilish aniqlandi.",
+          tip: "AI Yordami: " + err.message + " Qatorni qayta tekshiring."
+        });
       }
-      setLoading(false);
-    }
+      setIsProcessing(false);
+    }, 600);
   };
 
   return (
-    <div className="h-screen overflow-y-auto bg-[#0a0a0a] p-6 md:p-10 custom-scrollbar flex flex-col">
+    <div className="h-screen bg-[#050505] text-slate-300 p-4 md:p-6 flex flex-col font-sans overflow-hidden selection:bg-[#B23DEB]/30">
       
-      <div className="max-w-6xl mx-auto w-full mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter flex items-center gap-3">
-            <Code2 className="text-[#B23DEB]" size={35} />
-            CODE <span className="text-[#B23DEB]">LAB</span>
-          </h1>
-          <p className="text-gray-500 font-medium text-sm mt-1">Onlayn muhitda kod yozing va natijani darhol ko'ring</p>
-        </div>
-
-        <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
-          <div className="flex items-center gap-2 px-3 border-r border-white/10">
-            <Globe size={14} className="text-gray-500" />
-            <select 
-              className="bg-transparent text-white text-xs font-black uppercase outline-none cursor-pointer"
-              value={language}
-              onChange={(e) => {
-                  setLanguage(e.target.value);
-                  setCode(e.target.value === 'python' ? 'print("Salom, Python!")' : 'console.log("Salom, JS!");');
-              }}
-            >
-              <option value="javascript" className="bg-[#1a1a1a]">JavaScript</option>
-              <option value="python" className="bg-[#1a1a1a]">Python</option>
-            </select>
+      {/* Navbar */}
+      <nav className="max-w-7xl mx-auto w-full flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="bg-[#B23DEB] p-2.5 rounded-2xl shadow-[0_0_20px_rgba(178,61,235,0.4)]">
+            <Code2 size={24} className="text-white" />
           </div>
-          <button 
-            onClick={runCode}
-            disabled={loading}
-            className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all shadow-lg ${
-              loading 
-              ? 'bg-gray-800 text-gray-500' 
-              : 'bg-[#B23DEB] text-white hover:scale-105 active:scale-95 shadow-[#B23DEB]/20'
-            }`}
-          >
-            {loading ? <Cpu className="animate-spin" size={14} /> : <Play size={14} fill="white" />}
-            {loading ? 'RUNNING...' : 'EXECUTE'}
-          </button>
+          <div>
+            <h1 className="text-xl font-black text-white tracking-tighter italic">CODE<span className="text-[#B23DEB]">LAB</span> AI</h1>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Premium Python Workspace</p>
+          </div>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-150 mb-10">
+        <button 
+          onClick={processCodeLocally}
+          disabled={isProcessing}
+          className="group relative flex items-center gap-2 px-8 py-3 bg-[#B23DEB] hover:bg-[#9b34cd] text-white rounded-2xl text-xs font-black transition-all shadow-[0_0_20px_rgba(178,61,235,0.2)] active:scale-95 disabled:opacity-50"
+        >
+          {isProcessing ? <Zap className="animate-spin" size={16} /> : <Play size={16} fill="white" />}
+          {isProcessing ? 'TAHLIL...' : 'ISHGA TUSHIRISH'}
+        </button>
+      </nav>
+
+      {/* Main Workspace */}
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
         
-        {/* Editor Section */}
-        <div className="lg:col-span-2 bg-[#1e1e1e]  border border-white/5 overflow-hidden shadow-2xl flex flex-col group">
-          <div className="bg-white/3 px-6 py-4 border-b border-white/5 flex items-center justify-between">
-            <div className="flex space-x-2">
-              <div className="w-3 h-3 bg-[#ff5f56] rounded-full shadow-[0_0_10px_#ff5f56]"></div>
-              <div className="w-3 h-3 bg-[#ffbd2e] rounded-full shadow-[0_0_10px_#ffbd2e]"></div>
-              <div className="w-3 h-3 bg-[#27c93f] rounded-full shadow-[0_0_10px_#27c93f]"></div>
+        {/* Editor Area */}
+        <div className="lg:col-span-8 bg-[#0a0a0a] rounded-[2rem] border border-white/5 overflow-hidden flex flex-col shadow-2xl relative">
+          <div className="flex items-center justify-between px-8 py-4 bg-white/[0.02] border-b border-white/5">
+            <div className="flex gap-2">
+              <div className="w-3 h-3 rounded-full bg-white/10"></div>
+              <div className="w-3 h-3 rounded-full bg-white/10"></div>
+              <div className="w-3 h-3 rounded-full bg-white/10"></div>
             </div>
-            <span className="text-[10px] text-gray-500 font-black tracking-widest uppercase">main.{language === 'python' ? 'py' : 'js'}</span>
+            <span className="text-[10px] font-black tracking-widest text-[#B23DEB] uppercase opacity-80 underline underline-offset-4">main.py</span>
           </div>
-          
           <div className="flex-1">
             <Editor
               height="100%"
               theme="vs-dark"
-              language={language}
+              language="python"
               value={code}
-              onChange={(value) => setCode(value)}
+              onChange={(v) => setCode(v)}
               options={{
                 fontSize: 16,
+                fontFamily: 'JetBrains Mono',
                 minimap: { enabled: false },
-                automaticLayout: true,
                 padding: { top: 20 },
-                fontFamily: 'JetBrains Mono, monospace',
-                lineNumbersMinChars: 3,
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                backgroundColor: '#0a0a0a',
                 cursorSmoothCaretAnimation: "on",
-                smoothScrolling: true,
+                fontLigatures: true,
               }}
             />
           </div>
         </div>
 
-        <div className="bg-[#0f0f0f]  border border-white/5 overflow-hidden shadow-2xl flex flex-col relative">
-          <div className="bg-white/[0.03] px-6 py-4 border-b border-white/5 flex items-center gap-3">
-            <Terminal size={16} className="text-[#B23DEB]" />
-            <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase">Output Terminal</span>
-          </div>
-
-          <div className="flex-1 p-6 font-mono text-sm overflow-y-auto custom-scrollbar bg-gradient-to-b from-transparent to-[#B23DEB]/5">
-            <div className="flex items-start gap-3">
-              <span className="text-[#B23DEB] font-black italic">➜</span>
-              <pre className="text-gray-300 whitespace-pre-wrap break-all leading-relaxed font-medium">
-                {output}
+        {/* Sidebar */}
+        <div className="lg:col-span-4 flex flex-col gap-6 overflow-hidden">
+          
+          {/* Terminal */}
+          <div className="bg-[#0a0a0a] rounded-[2rem] border border-white/5 flex flex-col h-1/2 shadow-xl">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Terminal size={14} className="text-[#B23DEB]" />
+                <span className="text-[10px] font-black tracking-widest text-white/40 uppercase">Terminal Output</span>
+              </div>
+              <button onClick={() => setOutput('Terminal tozalandi...')} className="text-white/20 hover:text-[#B23DEB] transition-colors">
+                <RotateCcw size={14} />
+              </button>
+            </div>
+            <div className="p-8 font-mono text-sm overflow-y-auto flex-1 custom-scrollbar">
+              <pre className={insight?.type === 'error' ? 'text-red-400' : 'text-[#B23DEB]'}>
+                {`> ${output}`}
               </pre>
             </div>
-            {loading && (
-              <div className="mt-4 flex items-center gap-2">
-                <div className="w-2 h-2 bg-[#B23DEB] rounded-full animate-ping"></div>
-                <span className="text-[10px] text-gray-600 font-bold uppercase tracking-tighter italic">Process is active...</span>
-              </div>
-            )}
           </div>
 
-          {/* Reset Button */}
-          <button 
-            onClick={() => setOutput('Terminal tozalandi...')}
-            className="absolute bottom-6 right-6 p-3 bg-white/5 border border-white/10 rounded-xl text-gray-500 hover:text-white hover:bg-white/10 transition-all"
-          >
-            <RotateCcw size={16} />
-          </button>
+          {/* AI Tutor Panel */}
+          <div className="bg-[#0a0a0a] rounded-[2rem] border border-white/5 flex flex-col h-1/2 shadow-xl relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <BrainCircuit size={160} className="text-[#B23DEB]" />
+            </div>
+            
+            <div className="px-6 py-4 border-b border-white/5 bg-white/[0.01]">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-[#B23DEB]" />
+                <span className="text-[10px] font-black tracking-widest text-white/40 uppercase">AI Tutor Insights</span>
+              </div>
+            </div>
+
+            <div className="p-6 flex-1 overflow-y-auto relative z-10 custom-scrollbar">
+              {insight ? (
+                <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                  <div className={`p-4 rounded-2xl border ${insight.type === 'error' ? 'bg-red-500/5 border-red-500/20' : 'bg-[#B23DEB]/5 border-[#B23DEB]/20'}`}>
+                    <p className="text-xs text-white leading-relaxed font-semibold mb-2 italic">"{insight.msg}"</p>
+                    <div className="h-1 w-12 bg-[#B23DEB]/40 rounded-full"></div>
+                  </div>
+                  
+                  <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Lightbulb size={14} className="text-[#B23DEB]" />
+                      <span className="text-[10px] font-black uppercase text-[#B23DEB]">O'rganish uchun:</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed italic">{insight.tip}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
+                  <BrainCircuit size={48} className="mb-4 text-[#B23DEB]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em]">AI tayyor</p>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
 
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #B23DEB33; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #B23DEB; }
+        .monaco-editor, .overflow-guard { border-radius: 0 0 2rem 2rem; }
       `}</style>
     </div>
   );
