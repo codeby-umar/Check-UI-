@@ -4,9 +4,8 @@ import { collection, addDoc, query, orderBy, onSnapshot, where, serverTimestamp,
 import { useAuth } from "../context/AuthContext";
 import { 
   IoAddCircleOutline, IoTrashOutline, IoCheckmarkCircle, 
-  IoCloudUploadOutline, IoTimeOutline, IoShieldCheckmarkOutline, 
-  IoCloseOutline, IoChatbubblesOutline, IoSendOutline, IoBookOutline, IoImageOutline,
-  IoPersonRemoveOutline
+  IoCloudUploadOutline, IoTimeOutline, 
+  IoCloseOutline, IoChatbubblesOutline, IoSendOutline
 } from "react-icons/io5";
 
 const Profile = () => {
@@ -20,7 +19,6 @@ const Profile = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const scrollRef = useRef(null);
 
-  // Test Creator States (SAQLANDI)
   const [title, setTitle] = useState("");
   const [timeLimit, setTimeLimit] = useState(15);
   const [subject, setSubject] = useState("Rus tili");
@@ -45,25 +43,25 @@ const Profile = () => {
     }
   }, [user]);
 
-  // ASOSIY CHAT LOGIKASI - ADMINGA HAMMA XABAR KELADI
   useEffect(() => {
     if (!selectedUser || !user) return;
     
     let q;
     if (isAdmin) {
-      // ADMIN: Bazadagi oxirgi 500 ta xabarni filtrsiz olish (Spy Mode)
-      q = query(collection(db, "private_messages"), orderBy("createdAt", "asc"), limit(500));
+      q = query(collection(db, "private_messages"), orderBy("createdAt", "asc"), limit(1000));
     } else {
-      // USER: Faqat o'ziga tegishli chatId bo'yicha olish
       const combinedId = [user.uid, selectedUser.uid].sort().join("_");
-      q = query(collection(db, "private_messages"), where("chatId", "==", combinedId), orderBy("createdAt", "asc"));
+      q = query(
+        collection(db, "private_messages"), 
+        where("chatId", "==", combinedId), 
+        orderBy("createdAt", "asc")
+      );
     }
 
     const unsub = onSnapshot(q, (snap) => {
       let msgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
       if (isAdmin) {
-        // Admin tanlagan user ishtirok etgan barcha suhbatlarni ko'rsatish
         msgs = msgs.filter(m => m.from === selectedUser.uid || m.to === selectedUser.uid);
       }
       setChatHistory(msgs);
@@ -100,7 +98,6 @@ const Profile = () => {
     try { await addDoc(collection(db, "private_messages"), msgData); } catch (err) { console.log(err); }
   };
 
-  // Test Creator Funksiyalari (SAQLANDI)
   const addNewQuestion = () => setQuestions([...questions, { text: "", options: Array(4).fill(0).map((_, i) => ({ text: "", isCorrect: i === 0 })) }]);
   const handleUpdate = (qIdx, oIdx, val, isText = true) => {
     const newQuestions = [...questions];
@@ -121,7 +118,6 @@ const Profile = () => {
   return (
     <div className="h-screen w-full bg-[#0a0a0a] flex flex-col overflow-hidden text-white font-sans">
       
-      {/* NAVBAR */}
       <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#111] z-50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#B23DEB] rounded-xl flex items-center justify-center font-black italic shadow-[0_0_20px_#B23DEB44]">BT</div>
@@ -137,7 +133,6 @@ const Profile = () => {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* USERS LIST */}
         <div className="w-20 md:w-80 bg-[#080808] border-r border-white/5 overflow-y-auto p-4 space-y-2 custom-scrollbar">
           {users.map(u => (
             <button key={u.uid} onClick={() => setSelectedUser(u)} className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all border ${selectedUser?.uid === u.uid ? 'bg-[#B23DEB]/10 border-[#B23DEB]/30' : 'border-transparent hover:bg-white/5'}`}>
@@ -150,7 +145,6 @@ const Profile = () => {
           ))}
         </div>
 
-        {/* CHAT AREA */}
         <div className="flex-1 flex flex-col bg-[#050505]">
           {selectedUser ? (
             <div className="flex-1 flex flex-col p-4 md:p-10 max-w-5xl mx-auto w-full overflow-hidden">
@@ -162,7 +156,6 @@ const Profile = () => {
                 <button onClick={() => setSelectedUser(null)} className="p-3 bg-white/5 rounded-full"><IoCloseOutline size={20}/></button>
               </div>
 
-              {/* MESSAGES */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                 {chatHistory.map(m => (
                   <div key={m.id} className={`flex flex-col group ${m.from === user.uid ? 'items-end' : 'items-start'}`}>
@@ -181,22 +174,20 @@ const Profile = () => {
                 ))}
               </div>
 
-              {/* INPUT AREA */}
               <form onSubmit={sendMsg} className="mt-6 flex gap-3 p-3 bg-[#111] rounded-[2rem] border border-white/10">
-                <input type="text" className="flex-1 bg-transparent border-none outline-none px-6 text-sm" placeholder={isAdmin ? "Admin nomidan javob..." : "Xabar..."} value={privateMsg} onChange={(e) => setPrivateMsg(e.target.value)} />
+                <input type="text" className="flex-1 bg-transparent border-none outline-none px-6 text-sm text-white" placeholder={isAdmin ? "Admin nomidan javob..." : "Xabar yozing..."} value={privateMsg} onChange={(e) => setPrivateMsg(e.target.value)} />
                 <button type="submit" className="w-12 h-12 bg-[#B23DEB] rounded-full flex items-center justify-center"><IoSendOutline size={18}/></button>
               </form>
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center opacity-10">
               <IoChatbubblesOutline size={120} className="text-[#B23DEB] mb-4 animate-pulse" />
-              <p className="text-xl font-black uppercase tracking-[0.4em] italic">Select_User_to_Spy</p>
+              <p className="text-xl font-black uppercase tracking-[0.4em] italic">Select_User_to_Chat</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* TEST CREATOR MODAL (SAQLANDI) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
           <div className="bg-[#0a0a0a] w-full max-w-6xl h-[90vh] rounded-[3rem] border border-white/10 flex flex-col overflow-hidden animate-zoomIn shadow-2xl">

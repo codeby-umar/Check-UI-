@@ -29,36 +29,30 @@ function Home() {
 
   return (
     <div className="bg-[#0a0a0a] text-white selection:bg-[#B23DEB]/30">
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+      <section className="relative min-h-screen mt-7 flex items-center overflow-hidden">
         <div className="absolute top-[20%] right-[-10%] w-125 h-125 bg-[#B23DEB]/20 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-100 h-100 bg-[#B23DEB]/10 rounded-full blur-[100px] pointer-events-none"></div>
 
         <div className="container mx-auto px-6 py-20 flex flex-col lg:flex-row items-center justify-between gap-16 relative z-10">
           <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 animate-bounce-slow">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B23DEB] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#B23DEB]"></span>
-              </span>
-              <span className="text-sm text-gray-400 font-medium tracking-wide">v2.0 is now live</span>
-            </div>
+            
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-8 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-8 leading-tight">
               A New Way <br />
               <span className="bg-gradient-to-r from-[#B23DEB] via-[#d484f5] to-[#B23DEB] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(178,61,235,0.4)]">
                 To learn
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-12 font-light">
+            <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-12 font-light">
               Check UI — bu zamonaviy Oquvchilar uchun bilim va tajribani birlashtirgan platforma. Biz bilan o'zingizni sinang va mahoratingizni oshiring.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start">
-              <Link to="/login" className="group relative px-10 py-5 bg-[#B23DEB] rounded-2xl text-xl font-bold transition-all duration-300 hover:shadow-[0_0_40px_rgba(178,61,235,0.4)] hover:scale-105 active:scale-95">
+              <Link to="/login" className="group relative px-10 py-3.5 bg-[#B23DEB] rounded-xl text-lg font-bold transition-all duration-300 hover:shadow-[0_0_40px_rgba(178,61,235,0.4)] hover:scale-105 active:scale-95">
                 Boshlash →
               </Link>
-              <button className="text-white hover:text-[#B23DEB] transition-colors font-bold text-xl">
+              <button className="text-white hover:text-[#B23DEB] transition-colors font-bold text-lg">
                 Loyiha haqida
               </button>
             </div>
@@ -80,24 +74,21 @@ function Home() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Sarlavha qismi */}
         <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
             Nega aynan <span className="bg-gradient-to-r from-[#B23DEB] to-[#7e22ce] bg-clip-text text-transparent">Check UI?</span>
           </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg  leading-relaxed">
             Platformamiz sizga eng qisqa vaqt ichida natijaga erishishingiz uchun barcha zamonaviy asboblarni taqdim etadi.
           </p>
         </div>
 
-        {/* Kartochkalar Grid tizimi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((f, i) => (
             <div 
               key={i} 
               className="group relative p-8 rounded-3xl bg-white/[0.03] border border-white/10 hover:border-[#B23DEB]/40 transition-all duration-500 hover:-translate-y-2"
             >
-              {/* Kartochka ichidagi maxsus gradient (Hoverda ko'rinadi) */}
               <div className="absolute inset-0 bg-gradient-to-b from-[#B23DEB]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
 
               <div className="relative z-10">
@@ -114,8 +105,6 @@ function Home() {
         </div>
       </div>
     </section>
-      
-
     </div>
   );
 }

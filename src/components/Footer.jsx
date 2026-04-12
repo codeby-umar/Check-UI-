@@ -1,105 +1,108 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
 import { FiGithub, FiInstagram, FiSend, FiTwitter } from "react-icons/fi";
 import { motion } from "framer-motion";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  // Social havolalar obyekti tozalangan holatda
   const socialLinks = [
     { icon: <FiSend />, url: "https://t.me/checkui", label: "Telegram" },
-    {
-      icon: <FiInstagram />,
-      url: "https://instagram.com/checkui",
-      label: "Instagram",
-    },
+    { icon: <FiInstagram />, url: "https://instagram.com/checkui", label: "Instagram" },
     { icon: <FiGithub />, url: "https://github.com/checkui", label: "GitHub" },
-    {
-      icon: <FiTwitter />,
-      url: "https://twitter.com/checkui",
-      label: "Twitter",
-    },
+    { icon: <FiTwitter />, url: "https://twitter.com/checkui", label: "Twitter" },
   ];
 
-  const navLinks = [
+  // Navigatsiyani mantiqiy ikkita qismga bo'ldik
+  const mainLinks = [
     { name: "Bosh sahifa", url: "/" },
     { name: "Testlar", url: "/tests" },
     { name: "Natijalar", url: "/results" },
+    { name: "Reyting", url: "/leaderboard" },
+  ];
+
+  const resourceLinks = [
     { name: "Haqimizda", url: "/about" },
+    { name: "Blog", url: "/blog" },
+    { name: "Yordam", url: "/help" },
+    { name: "Aloqa", url: "/contact" },
   ];
 
   return (
-    <footer className="w-full bg-[#0A0A0A] border-t border-white/5 mt-20 font-sans">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="md:col-span-2 space-y-5">
-            <div className="flex items-center gap-3">
-              <Link to="/" className="group flex items-center gap-2">
-                <div className="w-10 h-10 bg-[#B23DEB] rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(178,61,235,0.5)]">
-                  <span className="text-white font-black text-2xl">C</span>
-                </div>
-                <span className="text-2xl md:text-3xl text-white font-bold tracking-tighter">
-                  Check<span className="text-[#B23DEB]">UI</span>
-                </span>
-              </Link>
-            </div>
-            <p className="text-gray-500 text-sm max-w-sm leading-relaxed">
-              Eng zamonaviy test platformasi. O'z bilmingizni real-vaqt rejimida
-              tekshiring.
+    <footer className="w-full bg-[#0A0A0A] border-t border-white/[0.05] mt-32 font-sans overflow-hidden">
+      <div className="max-w-7xl mx-auto px-8 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+          
+          {/* Brand Section - 4 ustun */}
+          <div className="md:col-span-4 space-y-6">
+            <Link to="/" className="inline-block group">
+              <span className="text-3xl text-white font-bold tracking-tighter flex items-center">
+                Check<span className="text-[#B23DEB] group-hover:drop-shadow-[0_0_8px_rgba(178,61,235,0.6)] transition-all">UI</span>
+              </span>
+            </Link>
+            <p className="text-gray-400 text-sm max-w-xs leading-relaxed font-light">
+              Zamonaviy test platformasi orqali o'z salohiyatingizni kashf eting.
             </p>
           </div>
 
-          <div className="space-y-5">
-            <h4 className="text-xs font-black uppercase tracking-widest text-white/40">
-              Menyu
-            </h4>
+          {/* Navigatsiya 1 - 2 ustun */}
+          <div className="md:col-span-2 space-y-6">
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Asosiy</h4>
             <ul className="space-y-3">
-              {navLinks.map((link) => (
+              {mainLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.url}
-                    className="text-gray-500 hover:text-[#B23DEB] text-sm transition-all duration-300"
-                  >
+                  <Link to={link.url} className="text-gray-400 hover:text-white text-[13px] transition-all duration-300">
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="space-y-5">
-            <h4 className="text-xs font-black uppercase tracking-widest text-white/40">
-              Ijtimoiy
-            </h4>
-            <div className="flex items-center gap-5">
+          {/* Navigatsiya 2 - 2 ustun */}
+          <div className="md:col-span-2 space-y-6">
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Resurslar</h4>
+            <ul className="space-y-3">
+              {resourceLinks.map((link) => (
+                <li key={link.name}>
+                  <Link to={link.url} className="text-gray-400 hover:text-white text-[13px] transition-all duration-300">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Social Section - 4 ustun */}
+          <div className="md:col-span-4 space-y-6 md:text-right">
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Ijtimoiy tarmoqlar</h4>
+            <div className="flex items-center gap-3 md:justify-end">
               {socialLinks.map((social, index) => (
                 <motion.a
                   key={index}
                   href={social.url}
-                  whileHover={{ y: -5, scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-gray-500 hover:text-[#B23DEB] text-xl transition-colors duration-300"
-                  aria-label={social.label}
-                  style={{ fontSize: "1.2rem" }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -4, scale: 1.1 }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.08] text-gray-400 hover:text-[#B23DEB] hover:border-[#B23DEB]/30 transition-all duration-300"
                 >
-                  {social.icon}
+                  <span className="text-base">{social.icon}</span>
                 </motion.a>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Copyright qismi - YANADA MINIMALISTIKA */}
-        <div className="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center sm:text-left">
-          <p className="text-gray-700 text-[10px] font-medium uppercase tracking-[0.2em]">
-            &copy; {currentYear} Check UI Platform.
-          </p>
-          <div className="flex gap-6 text-gray-700 text-[10px] uppercase tracking-widest">
-            {/* Privacy va Termsni shunchaki matn sifatida qoldirdik */}
-            <span>Privacy</span>
-            <span>Terms</span>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-medium tracking-[0.15em] uppercase">
+          <div className="flex items-center gap-2 text-gray-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#B23DEB] shadow-[0_0_8px_#B23DEB]"></div>
+            <p>© {currentYear} CHECK UI PLATFORM</p>
+          </div>
+          
+          <div className="flex gap-8 text-gray-600">
+            <Link to="/privacy" className="hover:text-gray-300 transition-colors">Maxfiylik</Link>
+            <Link to="/terms" className="hover:text-gray-300 transition-colors">Qoidalar</Link>
           </div>
         </div>
       </div>

@@ -24,18 +24,12 @@ function Header() {
       scrolled ? "bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 py-4" : "bg-transparent py-8"
     }`}>
       <div className="container mx-auto px-6 flex items-center justify-between">
-        
-        {/* Logo */}
         <Link to="/" className="group flex items-center gap-2">
-          <div className="w-10 h-10 bg-[#B23DEB] rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[0_0_20px_rgba(178,61,235,0.5)]">
-            <span className="text-white font-black text-2xl">C</span>
-          </div>
           <span className="text-2xl md:text-3xl text-white font-bold tracking-tighter">
             Check<span className="text-[#B23DEB]">UI</span>
           </span>
         </Link>
 
-        {/* Desktop Menu */}
         <nav className="hidden lg:flex items-center bg-white/5 border border-white/10 px-8 py-2 rounded-full backdrop-blur-sm">
           <ul className="flex items-center gap-8">
             {navLinks.map((link) => (
